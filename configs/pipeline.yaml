@@ -1,0 +1,40 @@
+Models:
+  DartsTFTModel: 
+    input_chunk_length: 7
+    output_chunk_length: 5
+    hidden_size: 32
+    dropout: 0.1            
+    lstm_layers: 2          
+    batch_size: 32          
+    n_epochs: 1           
+    random_state: 42
+    quantiles: [0.1, 0.5, 0.9]
+    num_samples: 100
+  DartsTCNModel:
+    input_chunk_length: 7
+    output_chunk_length: 5
+    kernel_size: 3
+    num_filters: 32
+    dilation_base: 2
+    num_layers: 3
+    dropout: 0.1
+    weight_norm: true
+    n_epochs: 5
+    batch_size: 8
+    lr: 0.001
+    random_state: null
+    likelihood: QuantileRegression
+    quantiles: [0.1, 0.5, 0.9]
+
+Dataset: 
+  BaltBestAggregatedAPIData:
+    roles:
+      SeriesRole.TARGET: q_hca
+      SeriesRole.KNOWN: temperature_outdoor_avg
+      SeriesRole.OBSERVED: ['temperature_1_max', 'temperature_2_max','temperature_room_avg']
+
+Metrics:
+  DimwiseAggregatedQuantileLoss:
+    axes: [OFFSET]
+  DimwiseAggregatedMetric:
+    axes: [TIME_STEP]

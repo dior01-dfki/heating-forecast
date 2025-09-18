@@ -30,7 +30,7 @@ def exec_taskenq(*args):
         project_name="ForeSightNEXT/BaltBest",
         task_name="test",
         add_task_init_call=True,
-        branch="main",
+        branch="iss42",
         repo="git@github.com:connected-intelligent-systems/forcateri.git",
         script="clearml_entry/test_pipeline.py",
         #docker = "nvidia/cuda:11.8.0-cudnn8-devel-ubuntu22.04",

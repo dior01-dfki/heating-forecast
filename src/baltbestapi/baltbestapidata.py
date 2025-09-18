@@ -3,9 +3,9 @@ from typing import List, Optional
 
 import pandas as pd
 
-from ..data.cachedapidata import CachedAPIData
-from ..data.clearmldatamixin import ClearmlDataMixin
-from ..data.timeseries import TimeSeries
+from forcateri.data.cachedapidata import CachedAPIData
+from forcateri.data.clearmldatamixin import ClearmlDataMixin
+from forcateri.data.timeseries import TimeSeries
 
 
 class BaltBestAPIData(ClearmlDataMixin, CachedAPIData):

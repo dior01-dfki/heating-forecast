@@ -1,6 +1,6 @@
-from forcateri.model.dartsmodels.dartstcnmodel import DartsTCNModel
-from forcateri.model.dartsmodels.dartstftmodel import DartsTFTModel
-from forcateri.baltbestapi.baltbestaggregatedapidata import BaltBestAggregatedAPIData
+from src.dartsmodels.dartstcnmodel import DartsTCNModel
+from src.dartsmodels.dartstftmodel import DartsTFTModel
+from src.baltbestapi.baltbestaggregatedapidata import BaltBestAggregatedAPIData
 import pandas as pd
 import yaml
 from forcateri.data.dataprovider import DataProvider, SeriesRole

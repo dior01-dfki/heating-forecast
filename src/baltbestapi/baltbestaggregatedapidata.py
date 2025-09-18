@@ -5,10 +5,10 @@ from typing import Any, List, Optional, Tuple, Union
 import numpy as np
 import pandas as pd
 
-from forcateri.baltbestapi.baltbestapidata import BaltBestAPIData
+from src.baltbestapi.baltbestapidata import BaltBestAPIData
 from pathlib import Path
 
-from ..data.timeseries import TimeSeries
+from forcateri.data.timeseries import TimeSeries
 
 logger = logging.getLogger(__name__)
 
