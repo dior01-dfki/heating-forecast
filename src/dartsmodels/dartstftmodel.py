@@ -10,6 +10,7 @@ from darts.utils.likelihood_models import QuantileRegression
 from pytorch_lightning.loggers.tensorboard import TensorBoardLogger
 from pytorch_lightning.callbacks import EarlyStopping
 from datetime import datetime
+from src import project_root
 
 from forcateri.data.adapterinput import AdapterInput
 from forcateri.model.modelexceptions import InvalidModelTypeError, ModelAdapterError

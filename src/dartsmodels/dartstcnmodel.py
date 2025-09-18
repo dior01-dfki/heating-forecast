@@ -15,6 +15,7 @@ from forcateri.model.dartsmodels.dartsmodeladapter import DartsModelAdapter
 from forcateri.data.timeseries import TimeSeries
 #from forcateri import project_root
 
+from src import project_root
 
 class DartsTCNModel(DartsModelAdapter):
     def __init__(self, *args, model: Optional[TCNModel] = None, **kwargs):
