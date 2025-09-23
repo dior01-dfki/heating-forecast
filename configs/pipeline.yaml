@@ -38,3 +38,13 @@ Metrics:
     axes: [OFFSET]
   DimwiseAggregatedMetric:
     axes: [TIME_STEP]
+
+ClearML:
+  task:
+    project_name: ForeSightNEXT/BaltBest
+    task_name: Forcateri Pipeline Test
+    repo: git@github.com:dior01-dfki/heating-forecast.git
+    branch: main
+    docker: dior00002/heating-forecast:v6
+    script: clearml_entry/test_pipeline.py
+  
