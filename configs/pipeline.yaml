@@ -46,5 +46,5 @@ ClearML:
     repo: git@github.com:dior01-dfki/heating-forecast.git
     branch: main
     docker: dior00002/heating-forecast:v6
-    script: clearml_entry/test_pipeline.py
+    script: main.py
   
