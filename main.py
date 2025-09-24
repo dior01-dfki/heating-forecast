@@ -11,7 +11,7 @@ from forcateri.reporting.dimwiseaggregatedmetric import DimwiseAggregatedMetric
 from forcateri.reporting.dimwiseaggregatedquantileloss import DimwiseAggregatedQuantileLoss
 from forcateri.reporting.resultreporter import ResultReporter
 from forcateri.controls.pipeline import Pipeline
-#from forcateri.utils.config_utils import extract_config, from_args_to_kwargs, arg_parser, load_config
+from forcateri.utils.config_utils import extract_config, from_args_to_kwargs, arg_parser, load_config
 from pathlib import Path
 from src import project_root
 import argparse
