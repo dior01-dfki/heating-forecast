@@ -45,6 +45,6 @@ ClearML:
     task_name: Forcateri Pipeline Test
     repo: git@github.com:dior01-dfki/heating-forecast.git
     branch: main
-    docker: dior00002/heating-forecast:v6
+    docker: dior00002/heating-forecast:v7
     script: main.py
   
