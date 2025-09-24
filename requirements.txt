@@ -188,3 +188,4 @@ widgetsnbextension==4.0.11
 xarray==2024.9.0
 xgboost>=2.1.2
 yarl==1.12.1
+-e /forcateri
