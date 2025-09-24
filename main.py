@@ -14,6 +14,7 @@ from forcateri.controls.pipeline import Pipeline
 from forcateri.utils.config_utils import extract_config, from_args_to_kwargs, arg_parser, load_config
 from pathlib import Path
 from src import project_root
+from src.utils import arg_parser
 import argparse
 import sys
 
