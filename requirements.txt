@@ -188,7 +188,7 @@ widgetsnbextension==4.0.11
 xarray==2024.9.0
 xgboost>=2.1.2
 yarl==1.12.1
-git+https://github.com/connected-intelligent-systems/forcateri.git@iss42#egg=forcateri 
+-e git+https://github.com/connected-intelligent-systems/forcateri.git@iss42#egg=forcateri --upgrade
 #forcateri==0.3 @ git+https://github.com/connected-intelligent-systems/forcateri.git@iss42
 
 
