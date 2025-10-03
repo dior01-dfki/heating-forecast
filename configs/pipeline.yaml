@@ -45,7 +45,7 @@ ClearML:
     task_name: Forcateri Pipeline Test
     repo: git@github.com:dior01-dfki/heating-forecast.git
     branch: main
-    docker: dior00002/heating-forecast:v8
+    docker: nvidia/cuda:11.8.0-cudnn8-devel-ubuntu22.04
     script: main.py
     skip_env_install: 0
   
