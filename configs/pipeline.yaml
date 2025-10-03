@@ -29,9 +29,9 @@ Models:
 Dataset: 
   BaltBestAggregatedAPIData:
     roles:
-      SeriesRole.TARGET: q_hca
-      SeriesRole.KNOWN: temperature_outdoor_avg
-      SeriesRole.OBSERVED: ['temperature_1_max', 'temperature_2_max','temperature_room_avg']
+      TARGET: q_hca
+      KNOWN: temperature_outdoor_avg
+      OBSERVED: ['temperature_1_max', 'temperature_2_max','temperature_room_avg']
 
 Metrics:
   DimwiseAggregatedQuantileLoss:
@@ -47,4 +47,5 @@ ClearML:
     branch: main
     docker: dior00002/heating-forecast:v7
     script: main.py
+    skip_env_install: 0
   
