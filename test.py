@@ -89,6 +89,7 @@ def main(*args):
     )
     cml_pipe.run(requirements="./requirements.txt")
 
+
 if __name__ == "__main__":
     parser = arg_parser(project_root)
     args = parser.parse_args()
