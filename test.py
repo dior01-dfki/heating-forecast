@@ -87,7 +87,7 @@ def main(*args):
         config_name="pipeline",
         project_root=project_root,
     )
-    cml_pipe.run()
+    cml_pipe.run(requirements="./requirements.txt")
 
 if __name__ == "__main__":
     parser = arg_parser(project_root)
