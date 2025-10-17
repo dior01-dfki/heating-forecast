@@ -42,6 +42,7 @@ METRIC_CLASSES = {
 def main(*args):
 
     kwargs = from_args_to_kwargs(*args)
+    print(list(args))
     dataset_names = list(kwargs["Dataset"].keys())
     data_sources = []
     roles = []
@@ -86,9 +87,11 @@ def main(*args):
         reporter=rep,
         config_name="pipeline",
         project_root=project_root,
-        param_kwargs=kwargs,
+        param_args=list(args),
+        requirements="./requirements.txt"
     )
-    cml_pipe.run(requirements="./requirements.txt")
+    cml_pipe.run()
+
 def test(*args):
     kwargs = from_args_to_kwargs(*args)
     print(kwargs)
