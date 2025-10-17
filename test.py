@@ -14,11 +14,11 @@ from forcateri.reporting.dimwiseaggregatedquantileloss import (
 )
 from forcateri.reporting.clearmlreporter import ClearMLReporter
 from forcateri.controls.clearmlsingletaskpipeline import ClearMlSingleTaskPipeline
-from forcateri.utils.config_utils import (
+from src.utils import (
     extract_config,
     from_args_to_kwargs,
-    arg_parser,
     load_config,
+    arg_parser
 )
 from pathlib import Path
 from src import project_root
@@ -86,15 +86,21 @@ def main(*args):
         reporter=rep,
         config_name="pipeline",
         project_root=project_root,
+        param_kwargs=kwargs,
     )
     cml_pipe.run(requirements="./requirements.txt")
-
-
+def test(*args):
+    kwargs = from_args_to_kwargs(*args)
+    print(kwargs)
+    print("\n\n pipeline args\n")
+    print(*args)
 if __name__ == "__main__":
     parser = arg_parser(project_root)
     args = parser.parse_args()
-    print("pipeline args\n\n")
-    print(args)
-    print("\n\n")
-    print(*list(vars(args).items()))
+    
+    # print("\n\n")
+    # print(*list(vars(args).items()))
     main(*list(vars(args).items()))
+
+    print(type(args))
+    #test(*list(vars(args).items()))
