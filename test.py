@@ -82,7 +82,7 @@ def main(*args):
     test_set = dp.get_test_set()
     rep = ClearMLReporter(test_set, models=model_adapters, metrics=metrics)
     cml_pipe = ClearMlSingleTaskPipeline(
-        dp,
+        dp=dp,
         model_adapter=model_adapters,
         reporter=rep,
         config_name="pipeline",
