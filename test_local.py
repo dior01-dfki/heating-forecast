@@ -14,7 +14,7 @@ from forcateri.reporting.dimwiseaggregatedquantileloss import (
 )
 from forcateri.reporting.resultreporter import ResultReporter
 from forcateri.controls.pipeline import Pipeline
-from src.utils import (
+from forcateri.utils.config_utils import (
     extract_config,
     from_args_to_kwargs,
     load_config,
@@ -41,9 +41,11 @@ METRIC_CLASSES = {
 
 def main(*args):
 
-    kwargs = from_args_to_kwargs(*args)
     print(list(args))
-    dataset_names = list(kwargs["Dataset"].keys())
+    kwargs = from_args_to_kwargs(*args)
+    
+    #print(kwargs)
+    dataset_names = list(kwargs["DataSources"].keys())
     data_sources = []
     roles = []
     for dataset_name in dataset_names:
@@ -54,9 +56,10 @@ def main(*args):
             )
         ds = dataset_class()
         data_sources.append(ds)
-        roles = kwargs["Dataset"][dataset_name]["roles"]
-
-    dp = DataProvider(data_sources=data_sources, roles=[roles],)
+        roles = kwargs["DataSources"][dataset_name]["roles"]
+    splits = kwargs["DataProvider"].get("splits", [0.33, 0.66])
+    print(type(splits))
+    dp = DataProvider(data_sources=data_sources, roles=[roles], splits=splits)
 
     model_adapters = []
     for model_name, params in kwargs["Models"].items():
@@ -93,13 +96,9 @@ def test(*args):
     print(kwargs)
     print("\n\n pipeline args\n")
     print(*args)
+
 if __name__ == "__main__":
     parser = arg_parser(project_root)
     args = parser.parse_args()
-    
-    # print("\n\n")
-    # print(*list(vars(args).items()))
     main(*list(vars(args).items()))
 
-    print(type(args))
-    #test(*list(vars(args).items()))

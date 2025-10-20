@@ -11,7 +11,8 @@ from forcateri.reporting.dimwiseaggregatedmetric import DimwiseAggregatedMetric
 from forcateri.reporting.dimwiseaggregatedquantileloss import DimwiseAggregatedQuantileLoss
 from forcateri.reporting.resultreporter import ResultReporter
 from forcateri.controls.pipeline import Pipeline
-from forcateri.utils.config_utils import extract_config, from_args_to_kwargs, arg_parser, load_config
+from forcateri.utils.config_utils import extract_config, load_config
+from src.utils import from_args_to_kwargs, arg_parser
 from pathlib import Path
 from src import project_root
 import argparse
@@ -34,7 +35,7 @@ def main(*args):
 
 
     kwargs = from_args_to_kwargs(*args)
-    dataset_names = list(kwargs['Dataset'].keys())
+    dataset_names = list(kwargs['DataSources'].keys())
     data_sources = []
     roles = []
     for dataset_name in dataset_names:
@@ -43,7 +44,7 @@ def main(*args):
             raise ValueError(f"Dataset class '{dataset_name}' not found in DATASET_CLASSES.")
         ds = dataset_class()
         data_sources.append(ds)
-        roles = kwargs['Dataset'][dataset_name]['roles']
+        roles = kwargs['DataSources'][dataset_name]['roles']
     
     
     dp = DataProvider(data_sources=data_sources, roles=[roles])

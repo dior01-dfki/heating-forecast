@@ -14,16 +14,12 @@ from forcateri.reporting.dimwiseaggregatedquantileloss import (
 )
 from forcateri.reporting.clearmlreporter import ClearMLReporter
 from forcateri.controls.clearmlsingletaskpipeline import ClearMLSingleTaskPipeline
-from src.utils import (
-    extract_config,
-    from_args_to_kwargs,
-    load_config,
-    arg_parser
-)
+
+from forcateri.utils.config_utils import extract_config, load_config, arg_parser, from_args_to_kwargs
 from pathlib import Path
-from src import project_root
-import argparse
-import sys
+#from src import project_root
+# import argparse
+# import sys
 
 
 OFFSET, TIME_STEP = TimeSeries.ROW_INDEX_NAMES
@@ -43,7 +39,7 @@ def main(*args):
 
     kwargs = from_args_to_kwargs(*args)
     print(list(args))
-    dataset_names = list(kwargs["Dataset"].keys())
+    dataset_names = list(kwargs["DataSources"].keys())
     data_sources = []
     roles = []
     for dataset_name in dataset_names:
@@ -54,7 +50,7 @@ def main(*args):
             )
         ds = dataset_class()
         data_sources.append(ds)
-        roles = kwargs["Dataset"][dataset_name]["roles"]
+        roles = kwargs["DataSources"][dataset_name]["roles"]
 
     dp = DataProvider(data_sources=data_sources, roles=[roles],)
 
@@ -97,8 +93,9 @@ def test(*args):
     print(kwargs)
     print("\n\n pipeline args\n")
     print(*args)
+
 if __name__ == "__main__":
-    parser = arg_parser(project_root)
+    parser = arg_parser(config_path="configs/pipeline.yaml")
     args = parser.parse_args()
     
     # print("\n\n")
