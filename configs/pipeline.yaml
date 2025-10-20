@@ -43,9 +43,5 @@ ClearML:
   task:
     project_name: ForeSightNEXT/BaltBest
     task_name: Forcateri Pipeline Test
-    repo: git@github.com:dior01-dfki/heating-forecast.git
-    branch: main
-    docker: dior00002/heating-forecast2:v1
-    script: main.py
-    skip_env_install: 0
+
   

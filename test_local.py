@@ -12,8 +12,8 @@ from forcateri.reporting.dimwiseaggregatedmetric import DimwiseAggregatedMetric
 from forcateri.reporting.dimwiseaggregatedquantileloss import (
     DimwiseAggregatedQuantileLoss,
 )
-from forcateri.reporting.clearmlreporter import ClearMLReporter
-from forcateri.controls.clearmlsingletaskpipeline import ClearMLSingleTaskPipeline
+from forcateri.reporting.resultreporter import ResultReporter
+from forcateri.controls.pipeline import Pipeline
 from src.utils import (
     extract_config,
     from_args_to_kwargs,
@@ -80,15 +80,11 @@ def main(*args):
         metrics.append(metric_class(axes=axes))
 
     test_set = dp.get_test_set()
-    rep = ClearMLReporter(test_set, models=model_adapters, metrics=metrics)
-    cml_pipe = ClearMLSingleTaskPipeline(
+    rep = ResultReporter(test_set, models=model_adapters, metrics=metrics)
+    cml_pipe = Pipeline(
         dp=dp,
         model_adapter=model_adapters,
         reporter=rep,
-        config_path="configs/pipeline.yaml",
-        param_args=list(args),
-        requirements="./requirements.txt",
-        docker = "dior00002/heating-forecast2:v1"
     )
     cml_pipe.run()
 
