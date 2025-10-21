@@ -53,29 +53,30 @@ def main():
     dp = DataProvider(data_sources=data_sources, roles=[roles])
     test_set = dp.get_test_set()
 
-    rep = ResultReporter(
-        test_set,
-        models=model_adapters,
-        metrics=metrics,
-    )
-    pipe = Pipeline(
-        dp=dp,
-        model_adapter=model_adapters,
-        reporter=rep,
-    )
-
-    # clearml_rep = ClearMLReporter(test_set, models=model_adapters, metrics=metrics)
-    # cml_pipe = ClearMLSingleTaskPipeline(
+    # rep = ResultReporter(
+    #     test_set,
+    #     models=model_adapters,
+    #     metrics=metrics,
+    # )
+    # pipe = Pipeline(
     #     dp=dp,
     #     model_adapter=model_adapters,
-    #     reporter=clearml_rep,
-    #     config_path="configs/pipeline.yaml",
-    #     param_args='',
-    #     requirements="./requirements.txt",
-    #     docker = "dior00002/heating-forecast2:v1"
+    #     reporter=rep,
     # )
-    # cml_pipe.run()
-    pipe.run()
+    #pipe.run()
+
+    clearml_rep = ClearMLReporter(test_set, models=model_adapters, metrics=metrics)
+    cml_pipe = ClearMLSingleTaskPipeline(
+        dp=dp,
+        model_adapter=model_adapters,
+        reporter=clearml_rep,
+        project_name='ForeSightNEXT/BaltBest',
+        task_name='Forcateri Pipeline Test no cfg',
+        requirements="./requirements.txt",
+        docker = "dior00002/heating-forecast2:v1"
+    )
+    cml_pipe.run()
+    
 
 
 if __name__ == "__main__":
