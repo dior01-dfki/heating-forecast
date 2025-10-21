@@ -26,13 +26,16 @@ Models:
     likelihood: QuantileRegression
     quantiles: [0.1, 0.5, 0.9]
 
-Dataset: 
+DataSources: 
   BaltBestAggregatedAPIData:
     roles:
       TARGET: q_hca
       KNOWN: temperature_outdoor_avg
       OBSERVED: ['temperature_1_max', 'temperature_2_max','temperature_room_avg']
 
+DataProvider:
+    splits: [0.33, 0.66]
+    
 Metrics:
   DimwiseAggregatedQuantileLoss:
     axes: [OFFSET]

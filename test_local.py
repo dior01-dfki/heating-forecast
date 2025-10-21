@@ -98,7 +98,7 @@ def test(*args):
     print(*args)
 
 if __name__ == "__main__":
-    parser = arg_parser(project_root)
+    parser = arg_parser('configs/pipeline.yaml')
     args = parser.parse_args()
     main(*list(vars(args).items()))
 
