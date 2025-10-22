@@ -135,6 +135,7 @@ class DartsTCNModel(DartsModelAdapter):
         """
 
         target, known, observed, static = super().convert_input(input)
+        self.target_col_names = [t.components[0] for t in target]
         target = self.scaler_target.fit_transform(target)
         observed = self.scaler_cov.fit_transform(observed)
         return target, known, observed, static
@@ -173,11 +174,17 @@ class DartsTCNModel(DartsModelAdapter):
         # self.isquantile = predict_likelihood_parameters
         if isinstance(data, list):
             # print(type(prediction[0][0]))
-
+            
             prediction_ts_format = [
                 DartsModelAdapter.to_time_series(ts=pred, quantiles=self.quantiles)
                 for pred in prediction
             ]
+            for ts, new_name in zip(prediction_ts_format, self.target_col_names):
+                ts.data.columns = pd.MultiIndex.from_tuples(
+                    [(new_name, q) for q in ts.data.columns.get_level_values(1)],
+                    names=TimeSeries.COL_INDEX_NAMES
+            )
+                
         else:
             prediction_ts_format = DartsModelAdapter.to_time_series(
                 ts=prediction, quantiles=self.quantiles
