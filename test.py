@@ -17,6 +17,7 @@ from forcateri.controls.clearmlsingletaskpipeline import ClearMLSingleTaskPipeli
 
 from forcateri.utils.config_utils import extract_config, load_config, arg_parser, from_args_to_kwargs
 from pathlib import Path
+from darts.utils.likelihood_models import *
 #from src import project_root
 # import argparse
 # import sys
@@ -35,10 +36,12 @@ METRIC_CLASSES = {
 }
 
 
-def main(*args):
+def main(*args, **kwargs):
 
-    kwargs = from_args_to_kwargs(*args)
     print(list(args))
+    kwargs.update(from_args_to_kwargs(*args))
+    
+    #print(kwargs)
     dataset_names = list(kwargs["DataSources"].keys())
     data_sources = []
     roles = []
@@ -51,22 +54,22 @@ def main(*args):
         ds = dataset_class()
         data_sources.append(ds)
         roles = kwargs["DataSources"][dataset_name]["roles"]
-    splits = kwargs.get("DataProvider", {}).get("splits", [0.33, 0.66])
-    print(kwargs['DataProvider'])
+    splits = kwargs["DataProvider"].get("splits", [0.33, 0.66])
+    print(type(splits))
     dp = DataProvider(data_sources=data_sources, roles=[roles], splits=splits)
 
     model_adapters = []
     for model_name, params in kwargs["Models"].items():
-            model_class = globals().get(model_name)
-            if model_class is None:
-                raise ValueError(
-                    f"Model class '{model_name}' not found in global namespace."
-                )
-            likelihood_name = params.get("likelihood")
-            likelihood = globals().get(likelihood_name) if likelihood_name else None
-            if likelihood:
-                params["likelihood"] = likelihood(params.get("quantiles", [0.1, 0.5, 0.9]))
-            model_adapters.append(model_class(**params))
+        model_class = globals().get(model_name)
+        if model_class is None:
+            raise ValueError(
+                f"Model class '{model_name}' not found in global namespace."
+            )
+        likelihood_name = params.get("likelihood")
+        likelihood = globals().get(likelihood_name) if likelihood_name else None
+        if likelihood:
+            params["likelihood"] = likelihood(params.get("quantiles", [0.1, 0.5, 0.9]))
+        model_adapters.append(model_class(**params))
     metrics = []
     for metric_name, params in kwargs["Metrics"].items():
         metric_class = METRIC_CLASSES.get(metric_name)
@@ -81,13 +84,14 @@ def main(*args):
         metrics.append(metric_class(axes=axes))
 
     test_set = dp.get_test_set()
+    print(args)
     rep = ClearMLReporter(test_set, models=model_adapters, metrics=metrics)
     cml_pipe = ClearMLSingleTaskPipeline(
         dp=dp,
         model_adapter=model_adapters,
         reporter=rep,
         config_path="configs/pipeline.yaml",
-        param_args=list(args),
+        init_args=list(args),
         requirements="./requirements.txt",
         docker = "dior00002/heating-forecast2:v1",
         repo="git@github.com:dior01-dfki/heating-forecast.git",
@@ -100,3 +104,4 @@ if __name__ == "__main__":
     parser = arg_parser(config_path="configs/pipeline.yaml")
     args = parser.parse_args()
     main(*list(vars(args).items()))
+
