@@ -31,9 +31,13 @@ FEATURE, REPRESENTATION = TimeSeries.COL_INDEX_NAMES
 
 def main():
 
+    n_epochs = 10
     model_adapters = []
-    model_adapters.append(DartsTFTModel())
-    model_adapters.append(DartsTCNModel())
+    init_args = []
+    init_args.append(("n_epochs", n_epochs))
+    model_adapters.append(DartsTFTModel(n_epochs=n_epochs))
+    model_adapters.append(DartsTCNModel(n_epochs=n_epochs))
+    
     data_sources = []
     data_sources.append(BaltBestAggregatedAPIData())
     roles = {
@@ -73,6 +77,7 @@ def main():
         project_name='ForeSightNEXT/BaltBest',
         task_name='Forcateri Pipeline Test no cfg',
         requirements="./requirements.txt",
+        param_args=init_args,
         docker = "dior00002/heating-forecast2:v1"
     )
     cml_pipe.run()

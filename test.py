@@ -57,12 +57,16 @@ def main(*args):
 
     model_adapters = []
     for model_name, params in kwargs["Models"].items():
-        model_class = globals().get(model_name)
-        if model_class is None:
-            raise ValueError(
-                f"Model class '{model_name}' not found in global namespace."
-            )
-        model_adapters.append(model_class(kwargs=params))
+            model_class = globals().get(model_name)
+            if model_class is None:
+                raise ValueError(
+                    f"Model class '{model_name}' not found in global namespace."
+                )
+            likelihood_name = params.get("likelihood")
+            likelihood = globals().get(likelihood_name) if likelihood_name else None
+            if likelihood:
+                params["likelihood"] = likelihood(params.get("quantiles", [0.1, 0.5, 0.9]))
+            model_adapters.append(model_class(**params))
     metrics = []
     for metric_name, params in kwargs["Metrics"].items():
         metric_class = METRIC_CLASSES.get(metric_name)
@@ -85,23 +89,14 @@ def main(*args):
         config_path="configs/pipeline.yaml",
         param_args=list(args),
         requirements="./requirements.txt",
-        docker = "dior00002/heating-forecast2:v1"
+        docker = "dior00002/heating-forecast2:v1",
+        repo="git@github.com:dior01-dfki/heating-forecast.git",
+        branch="iss47"
     )
     cml_pipe.run()
 
-def test(*args):
-    kwargs = from_args_to_kwargs(*args)
-    print(kwargs)
-    print("\n\n pipeline args\n")
-    print(*args)
 
 if __name__ == "__main__":
     parser = arg_parser(config_path="configs/pipeline.yaml")
     args = parser.parse_args()
-    
-    # print("\n\n")
-    # print(*list(vars(args).items()))
     main(*list(vars(args).items()))
-
-    print(type(args))
-    #test(*list(vars(args).items()))

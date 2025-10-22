@@ -76,7 +76,7 @@ class DartsTCNModel(DartsModelAdapter):
                 optimizer_kwargs=kwargs.get("optimizer_kwargs", {"lr": 1e-3}),
                 random_state=kwargs.get("random_state", None),
                 likelihood=kwargs.get(
-                    "likelihood", QuantileRegression(quantiles=self.quantiles)
+                    "likelihood", QuantileRegression(self.quantiles)
                 ),
                 pl_trainer_kwargs=trainer_kwargs,
             )

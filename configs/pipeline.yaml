@@ -19,12 +19,12 @@ Models:
     num_layers: 3
     dropout: 0.1
     weight_norm: true
-    n_epochs: 5
+    n_epochs: 1
     batch_size: 8
     lr: 0.001
     random_state: null
     likelihood: QuantileRegression
-    quantiles: [0.1, 0.5, 0.9]
+    quantiles: [0.1,0.3, 0.5,0.7, 0.9]
 
 DataSources: 
   BaltBestAggregatedAPIData:
@@ -40,7 +40,7 @@ Metrics:
   DimwiseAggregatedQuantileLoss:
     axes: [OFFSET]
   DimwiseAggregatedMetric:
-    axes: [TIME_STEP]
+    axes: [OFFSET]
 
 ClearML:
   task:

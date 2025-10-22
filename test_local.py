@@ -24,7 +24,7 @@ from pathlib import Path
 from src import project_root
 import argparse
 import sys
-
+from darts.utils.likelihood_models import *
 
 OFFSET, TIME_STEP = TimeSeries.ROW_INDEX_NAMES
 FEATURE, REPRESENTATION = TimeSeries.COL_INDEX_NAMES
@@ -68,7 +68,11 @@ def main(*args):
             raise ValueError(
                 f"Model class '{model_name}' not found in global namespace."
             )
-        model_adapters.append(model_class(kwargs=params))
+        likelihood_name = params.get("likelihood")
+        likelihood = globals().get(likelihood_name) if likelihood_name else None
+        if likelihood:
+            params["likelihood"] = likelihood(params.get("quantiles", [0.1, 0.5, 0.9]))
+        model_adapters.append(model_class(**params))
     metrics = []
     for metric_name, params in kwargs["Metrics"].items():
         metric_class = METRIC_CLASSES.get(metric_name)
@@ -91,11 +95,6 @@ def main(*args):
     )
     cml_pipe.run()
 
-def test(*args):
-    kwargs = from_args_to_kwargs(*args)
-    print(kwargs)
-    print("\n\n pipeline args\n")
-    print(*args)
 
 if __name__ == "__main__":
     parser = arg_parser('configs/pipeline.yaml')
