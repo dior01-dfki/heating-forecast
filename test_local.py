@@ -58,7 +58,7 @@ def main(*args):
         data_sources.append(ds)
         roles = kwargs["DataSources"][dataset_name]["roles"]
     splits = kwargs["DataProvider"].get("splits", [0.33, 0.66])
-    print(type(splits))
+    
     dp = DataProvider(data_sources=data_sources, roles=[roles], splits=splits)
 
     model_adapters = []
