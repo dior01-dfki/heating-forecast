@@ -12,7 +12,7 @@ from forcateri.reporting.dimwiseaggregatedmetric import DimwiseAggregatedMetric
 from forcateri.reporting.dimwiseaggregatedquantileloss import (
     DimwiseAggregatedQuantileLoss,
 )
-from forcateri.reporting.resultreporter import ResultReporter
+from forcateri.reporting.localresultreporter import LocalResultReporter
 from forcateri.controls.pipeline import Pipeline
 from forcateri.utils.config_utils import (
     extract_config,
@@ -60,7 +60,8 @@ def main(*args):
     splits = kwargs["DataProvider"].get("splits", [0.33, 0.66])
     
     dp = DataProvider(data_sources=data_sources, roles=[roles], splits=splits)
-
+    trainset = dp.get_train_set()
+    valset = dp.get_val_set()
     model_adapters = []
     for model_name, params in kwargs["Models"].items():
         model_class = globals().get(model_name)
@@ -70,6 +71,8 @@ def main(*args):
             )
         likelihood_name = params.get("likelihood")
         likelihood = globals().get(likelihood_name) if likelihood_name else None
+        params['scaler_data'] = trainset
+        print(params)
         if likelihood:
             params["likelihood"] = likelihood(params.get("quantiles", [0.1, 0.5, 0.9]))
         model_adapters.append(model_class(**params))
@@ -85,16 +88,18 @@ def main(*args):
             OFFSET if ax == "OFFSET" else TIME_STEP for ax in params.get("axes", [])
         ]
         metrics.append(metric_class(axes=axes))
-
+    for m in metrics:
+        print(m)
     test_set = dp.get_test_set()
-    rep = ResultReporter(test_set, models=model_adapters, metrics=metrics)
-    cml_pipe = Pipeline(
+    rep = LocalResultReporter(test_set, models=model_adapters, metrics=metrics)
+    pipe = Pipeline(
         dp=dp,
         model_adapter=model_adapters,
         reporter=rep,
     )
-    cml_pipe.run()
-
+    pipe.run()
+    rep.report_metrics()
+    rep.report_plots()
 
 if __name__ == "__main__":
     parser = arg_parser('configs/pipeline.yaml')

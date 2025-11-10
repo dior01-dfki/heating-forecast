@@ -13,9 +13,12 @@ from forcateri.data.adapterinput import AdapterInput
 from forcateri.model.modelexceptions import InvalidModelTypeError, ModelAdapterError
 from forcateri.model.dartsmodeladapter import DartsModelAdapter
 from forcateri.data.timeseries import TimeSeries
-#from forcateri import project_root
+from forcateri.utils.decorators import apply_inverse_scaling
+
+# from forcateri import project_root
 
 from src import project_root
+
 
 class DartsTCNModel(DartsModelAdapter):
     def __init__(self, *args, model: Optional[TCNModel] = None, **kwargs):
@@ -75,14 +78,12 @@ class DartsTCNModel(DartsModelAdapter):
                 batch_size=kwargs.get("batch_size", 8),
                 optimizer_kwargs=kwargs.get("optimizer_kwargs", {"lr": 1e-3}),
                 random_state=kwargs.get("random_state", None),
-                likelihood=kwargs.get(
-                    "likelihood", QuantileRegression(self.quantiles)
-                ),
+                likelihood=kwargs.get("likelihood", QuantileRegression(self.quantiles)),
                 pl_trainer_kwargs=trainer_kwargs,
             )
         self.forecast_horizon = kwargs.get("forecast_horizon", 1)
-        self.scaler_target = Scaler()
-        self.scaler_cov = Scaler()
+        # self.scaler_target = Scaler()
+        # self.scaler_cov = Scaler()
 
     def fit(
         self,
@@ -105,99 +106,9 @@ class DartsTCNModel(DartsModelAdapter):
             An error message is logged if the model fitting process fails.
         """
 
-        try:
+        super().fit(train_data=train_data, val_data=val_data)
 
-            super().fit(train_data=train_data, val_data=val_data)
 
-        except ModelAdapterError as e:
-            logging.error("Failed to fit a model, check the model params")
-            raise ModelAdapterError(f"Failed to fit model: {e}")
-
-    def convert_input(self, input: List[AdapterInput]) -> Tuple[
-        List[DartsTimeSeries],
-        List[DartsTimeSeries],
-        List[DartsTimeSeries],
-        Optional[pd.DataFrame],
-    ]:
-        """
-        Converts the input data into the required format for the model, applying scaling transformations
-        to the target and observed time series.
-
-        Parameters:
-            data (List[AdapterInput]): A list of AdapterInput objects containing the input data.
-
-        Returns:
-            Tuple[List[DartsTimeSeries], List[DartsTimeSeries], List[DartsTimeSeries], Optional[pd.DataFrame]]:
-                - target: A list of scaled DartsTimeSeries objects representing the target time series.
-                - known: A list of DartsTimeSeries objects representing the known covariates.
-                - observed: A list of scaled DartsTimeSeries objects representing the observed covariates.
-                - static: An optional pandas DataFrame containing static covariates, if available.
-        """
-
-        target, known, observed, static = super().convert_input(input)
-        self.target_col_names = [t.components[0] for t in target]
-        target = self.scaler_target.fit_transform(target)
-        observed = self.scaler_cov.fit_transform(observed)
-        return target, known, observed, static
-
-    def predict(
-        self,
-        data: Union[AdapterInput, List[AdapterInput]],
-        n: Optional[int] = 1,
-        historical_forecast=True,
-        predict_likelihood_parameters=True,
-        forecast_horizon=5,
-    ) -> List[TimeSeries]:
-        """
-        Predict using the model and provided data.
-        """
-
-        super().prepare_predict_args(data=data)
-        self._predict_args.update(
-            {"predict_likelihood_parameters": predict_likelihood_parameters}
-        )
-        if historical_forecast:
-            # If historical forecast is True, use the model's historical_forecast method
-            last_points_only = False
-            prediction = self.model.historical_forecasts(
-                **self._predict_args,
-                forecast_horizon=forecast_horizon,
-                last_points_only=last_points_only,
-                retrain=False,
-            )
-            prediction = self.scaler_target.inverse_transform(prediction)
-        else:
-            if n is not None:
-                self._predict_args["n"] = n
-            prediction = self.model.predict(**self._predict_args)
-            prediction = self.scaler_target.inverse_transform(prediction)
-        # self.isquantile = predict_likelihood_parameters
-        if isinstance(data, list):
-            # print(type(prediction[0][0]))
-            
-            prediction_ts_format = [
-                DartsModelAdapter.to_time_series(ts=pred, quantiles=self.quantiles)
-                for pred in prediction
-            ]
-            for ts, new_name in zip(prediction_ts_format, self.target_col_names):
-                ts.data.columns = pd.MultiIndex.from_tuples(
-                    [(new_name, q) for q in ts.data.columns.get_level_values(1)],
-                    names=TimeSeries.COL_INDEX_NAMES
-            )
-                
-        else:
-            prediction_ts_format = DartsModelAdapter.to_time_series(
-                ts=prediction, quantiles=self.quantiles
-            )
-        return prediction_ts_format
-
-    def tune(
-        self,
-        train_data: List[AdapterInput],
-        val_data: Optional[List[AdapterInput]],
-        **kwargs,
-    ):
-        raise NotImplementedError("Tune method is not implemented yet.")
 
     @classmethod
     def load(cls, path: Union[Path, str]) -> "DartsTCNModel":

@@ -12,7 +12,7 @@ from forcateri.reporting.dimwiseaggregatedmetric import DimwiseAggregatedMetric
 from forcateri.reporting.dimwiseaggregatedquantileloss import (
     DimwiseAggregatedQuantileLoss,
 )
-from forcateri.reporting.clearmlreporter import ClearMLReporter
+from forcateri.reporting.localresultreporter import LocalResultReporter
 from forcateri.reporting.resultreporter import ResultReporter
 from forcateri.controls.pipeline import Pipeline
 from forcateri.controls.clearmlsingletaskpipeline import ClearMLSingleTaskPipeline
@@ -35,8 +35,8 @@ def main():
     model_adapters = []
     init_args = []
     init_args.append(("n_epochs", n_epochs))
-    model_adapters.append(DartsTFTModel(n_epochs=n_epochs))
-    model_adapters.append(DartsTCNModel(n_epochs=n_epochs))
+    #model_adapters.append(DartsTFTModel(n_epochs=n_epochs))
+    
     
     data_sources = []
     data_sources.append(BaltBestAggregatedAPIData())
@@ -48,15 +48,15 @@ def main():
         'temperature_room_avg': SeriesRole.OBSERVED,
     }
     metrics = [] 
-    metrics.append(
-        DimwiseAggregatedQuantileLoss(axes=[OFFSET, FEATURE])
-    )
+    # metrics.append(
+    #     DimwiseAggregatedQuantileLoss(axes=[OFFSET, FEATURE])
+    # )
     metrics.append(
         DimwiseAggregatedMetric(axes=[TIME_STEP])
     )
     dp = DataProvider(data_sources=data_sources, roles=[roles])
     test_set = dp.get_test_set()
-
+    model_adapters.append(DartsTCNModel(n_epochs=1, scaler_data=dp.get_train_set(), predict_likelihood_parameters=True))
     # rep = ResultReporter(
     #     test_set,
     #     models=model_adapters,
@@ -69,19 +69,13 @@ def main():
     # )
     #pipe.run()
 
-    clearml_rep = ClearMLReporter(test_set, models=model_adapters, metrics=metrics)
-    cml_pipe = ClearMLSingleTaskPipeline(
+    rep = LocalResultReporter(test_set, models=model_adapters, metrics=metrics)
+    pipe = Pipeline(
         dp=dp,
         model_adapter=model_adapters,
-        reporter=clearml_rep,
-        config_path="configs/pipeline.yaml",
-        #init_args=list(args),
-        requirements="./requirements.txt",
-        docker = "dior00002/heating-forecast2:v1",
-        repo="git@github.com:dior01-dfki/heating-forecast.git",
-        branch="iss47"
+        reporter=rep,
     )
-    cml_pipe.run()
+    pipe.run()
     
 
 
