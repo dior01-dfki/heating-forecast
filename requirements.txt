@@ -38,7 +38,7 @@ executing==2.0.1
 fastjsonschema==2.20.0
 filelock==3.16.1
 fonttools==4.54.1
-forcateri @ git+https://github.com/connected-intelligent-systems/forcateri.git@8e5457126aa1c0df99617c1ac73ca7feeed34c71
+forcateri @ git+https://github.com/connected-intelligent-systems/forcateri.git@iss42
 fqdn==1.5.1
 frozenlist==1.4.1
 fs==2.4.16
