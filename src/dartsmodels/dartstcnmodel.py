@@ -13,7 +13,7 @@ from forcateri.data.adapterinput import AdapterInput
 from forcateri.model.modelexceptions import InvalidModelTypeError, ModelAdapterError
 from forcateri.model.dartsmodeladapter import DartsModelAdapter
 from forcateri.data.timeseries import TimeSeries
-from forcateri.utils.decorators import apply_inverse_scaling
+from .defaultparamsmixin import DefaultParamsMixin
 
 # from forcateri import project_root
 
