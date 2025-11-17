@@ -181,6 +181,8 @@ def main_local(cfg):
 
 
 def main_fire(**kwargs):
+    
+
     n_epochs = kwargs.get("n_epochs",10)
     input_chunks = kwargs.get("input_chunks_length",24)
     model_adapters = []
@@ -194,6 +196,9 @@ def main_fire(**kwargs):
     print(model_adapters[0].quantiles)
     defaults = model_adapters[0].get_default_params()
     kwargs = {**defaults, **kwargs}
+    args = arg_parser(default_kwargs=kwargs).parse_args()
+    kwargs = vars(args)
+    init_args = list(kwargs.items())
     data_sources = []
     data_sources.append(BaltBestAggregatedAPIData())
     roles = {
@@ -214,11 +219,8 @@ def main_fire(**kwargs):
 
     #args = kwargs
     clearml_rep = ClearMLReporter(test_set, models=model_adapters, metrics=metrics)
-    #print(args)
-    args = arg_parser(default_kwargs=kwargs).parse_args()
-    #args = list(vars(args).items())
-    kwargs = vars(args)
-    init_args = list(kwargs.items())
+
+    
     print(type(args))
     cml_pipe = ClearMLSingleTaskPipeline(
         dp=dp,
@@ -244,20 +246,57 @@ def main_fire(**kwargs):
 
 
 def fire_test(**kwargs):
+    project_name = kwargs.get("project_name","ForeSightNEXT/BaltBest")
+    task_name = kwargs.get("task_name","DartsTCNModel_FireTest")
+
+    task = Task.init(project_name=project_name, task_name=task_name)
+    task.set_base_docker(docker_image="dior00002/heating-forecast2:v1")
     n_epochs = kwargs.get("n_epochs",10)
     input_chunks = kwargs.get("input_chunks_length",24)
+    model_adapters = []
     predict_likelihood_parameters = kwargs.get("predict_likelihood_parameters",True)
     forecast_horizon = kwargs.get("forecast_horizon",1)
     model_name = kwargs.get("model_name","testname")
-    dartstcn = DartsTCNModel(n_epochs=n_epochs, model_name=model_name,predict_likelihood_parameters=predict_likelihood_parameters, input_chunk_length=input_chunks, forecast_horizon=forecast_horizon,kwargs=kwargs)
-    print(dartstcn.get_default_params())
-    defaults = dartstcn.get_default_params()
-    #Here kwargs override defaults
+    # init_args = []
+    # init_args.append(("n_epochs", n_epochs))
+    #model_adapters.append(DartsTFTModel(n_epochs=n_epochs))
+    model_adapters.append(DartsTCNModel(n_epochs=n_epochs, model_name=model_name,predict_likelihood_parameters=predict_likelihood_parameters, input_chunk_length=input_chunks, forecast_horizon=forecast_horizon,kwargs=kwargs))
+    print(model_adapters[0].quantiles)
+    defaults = model_adapters[0].get_default_params()
     kwargs = {**defaults, **kwargs}
-    print(kwargs)
-    print("\nThis is fire_test\n")
-    task = Task.init(project_name='ForeSightNEXT/BaltBest', task_name='FireTest')
-    task.connect(kwargs)
+    args = arg_parser(default_kwargs=kwargs).parse_args()
+    kwargs = vars(args)
+    #init_args = list(kwargs.items())
+
+    task.connect_configuration(kwargs)
+    task.execute_remotely(queue_name="default")
+
+
+    data_sources = []
+    data_sources.append(BaltBestAggregatedAPIData())
+    roles = {
+      'TARGET': ['q_hca'],
+      'KNOWN': ['temperature_outdoor_avg'],
+      'OBSERVED': ['temperature_1_max', 'temperature_2_max','temperature_room_avg']
+    }
+
+    metrics = [] 
+    metrics.append(
+        DimwiseAggregatedQuantileLoss(axes=[OFFSET])
+    )
+    metrics.append(
+        DimwiseAggregatedMetric(axes=[TIME_STEP])
+    )
+    dp = DataProvider(data_sources=data_sources, roles=[roles])
+    test_set = dp.get_test_set()
+
+    rep = LocalResultReporter(test_set, models=model_adapters, metrics=metrics)
+    pipe = Pipeline(
+        dp=dp,
+        model_adapter=model_adapters,
+        reporter=rep,
+    )
+    pipe.run()
 
 
 def fire_test2(**kwargs):
@@ -282,7 +321,7 @@ if __name__ == "__main__":
     # args = parser.parse_args()
     #main_cml()
     #main_local()
+    #fire.Fire(fire_test)
     fire.Fire(main_fire)
-    
 
 
