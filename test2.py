@@ -23,6 +23,9 @@ from darts.utils.likelihood_models import *
 from hydra import main
 from omegaconf import OmegaConf
 import fire
+from forcateri.utils.config_utils import extract_config, load_config, arg_parser
+from clearml import Task
+
 #from src import project_root
 # import argparse
 # import sys
@@ -54,7 +57,7 @@ METRIC_CLASSES = {
 
 
 @main(config_path='configs',config_name='pipeline', version_base=None)
-def main_cml(cfg, dataset_names, models, **kwargs):
+def main_cml(cfg):
 
     cfg = OmegaConf.to_container(cfg,resolve=True)
     dataset_names = list(cfg["DataSources"].keys())
@@ -179,12 +182,18 @@ def main_local(cfg):
 
 def main_fire(**kwargs):
     n_epochs = kwargs.get("n_epochs",10)
+    input_chunks = kwargs.get("input_chunks_length",24)
     model_adapters = []
+    predict_likelihood_parameters = kwargs.get("predict_likelihood_parameters",True)
+    forecast_horizon = kwargs.get("forecast_horizon",1)
+    model_name = kwargs.get("model_name","testname")
     # init_args = []
     # init_args.append(("n_epochs", n_epochs))
     #model_adapters.append(DartsTFTModel(n_epochs=n_epochs))
-    model_adapters.append(DartsTCNModel(n_epochs=n_epochs))
-    
+    model_adapters.append(DartsTCNModel(n_epochs=n_epochs, model_name=model_name,predict_likelihood_parameters=predict_likelihood_parameters, input_chunk_length=input_chunks, forecast_horizon=forecast_horizon,kwargs=kwargs))
+    print(model_adapters[0].quantiles)
+    defaults = model_adapters[0].get_default_params()
+    kwargs = {**defaults, **kwargs}
     data_sources = []
     data_sources.append(BaltBestAggregatedAPIData())
     roles = {
@@ -195,7 +204,7 @@ def main_fire(**kwargs):
 
     metrics = [] 
     metrics.append(
-        DimwiseAggregatedQuantileLoss(axes=[OFFSET, FEATURE])
+        DimwiseAggregatedQuantileLoss(axes=[OFFSET])
     )
     metrics.append(
         DimwiseAggregatedMetric(axes=[TIME_STEP])
@@ -203,11 +212,14 @@ def main_fire(**kwargs):
     dp = DataProvider(data_sources=data_sources, roles=[roles])
     test_set = dp.get_test_set()
 
-    args = kwargs
+    #args = kwargs
     clearml_rep = ClearMLReporter(test_set, models=model_adapters, metrics=metrics)
-
-    
-
+    #print(args)
+    args = arg_parser(default_kwargs=kwargs).parse_args()
+    #args = list(vars(args).items())
+    kwargs = vars(args)
+    init_args = list(kwargs.items())
+    print(type(args))
     cml_pipe = ClearMLSingleTaskPipeline(
         dp=dp,
         model_adapter=model_adapters,
@@ -215,18 +227,62 @@ def main_fire(**kwargs):
         project_name='ForeSightNEXT/BaltBest',
         task_name='DartsTCNModel_NoConfig',
         #config_path="configs/pipeline.yaml",
-        init_args=args,
+        init_args=init_args,
         requirements="./requirements.txt",
         docker = "dior00002/heating-forecast2:v1",
         repo="git@github.com:dior01-dfki/heating-forecast.git",
         branch="iss47"
     )
     cml_pipe.run()
+    # rep = LocalResultReporter(test_set, models=model_adapters, metrics=metrics)
+    # pipe = Pipeline(
+    #     dp=dp,
+    #     model_adapter=model_adapters,
+    #     reporter=rep,
+    # )
+    # pipe.run()
+
+
+def fire_test(**kwargs):
+    n_epochs = kwargs.get("n_epochs",10)
+    input_chunks = kwargs.get("input_chunks_length",24)
+    predict_likelihood_parameters = kwargs.get("predict_likelihood_parameters",True)
+    forecast_horizon = kwargs.get("forecast_horizon",1)
+    model_name = kwargs.get("model_name","testname")
+    dartstcn = DartsTCNModel(n_epochs=n_epochs, model_name=model_name,predict_likelihood_parameters=predict_likelihood_parameters, input_chunk_length=input_chunks, forecast_horizon=forecast_horizon,kwargs=kwargs)
+    print(dartstcn.get_default_params())
+    defaults = dartstcn.get_default_params()
+    #Here kwargs override defaults
+    kwargs = {**defaults, **kwargs}
+    print(kwargs)
+    print("\nThis is fire_test\n")
+    task = Task.init(project_name='ForeSightNEXT/BaltBest', task_name='FireTest')
+    task.connect(kwargs)
+
+
+def fire_test2(**kwargs):
+    parser = arg_parser(config_path="configs/pipeline.yaml")
+    model_name = kwargs.get("model_name","testname")
+    args = parser.parse_args()
+    print(type(args))
+    print(list(vars(args).items()))
+    #kwargs = {**defaults, **kwargs}
+    print("\n\n\n")
+    print("This is fire_test2")
+    print(kwargs)
+    #print(kwargs)
+
+#ClearML UI why it does not change the params? 
+
 
 if __name__ == "__main__":
+    #fire.Fire(fire_test)
+    #fire.Fire(fire_test2)
     # parser = arg_parser(config_path="configs/pipeline.yaml")
     # args = parser.parse_args()
     #main_cml()
     #main_local()
     fire.Fire(main_fire)
+    
+
 
