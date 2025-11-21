@@ -108,6 +108,7 @@ class DartsTCNModel(DartsModelAdapter):
             self.optimizer_kwargs = optimizer_kwargs
             self.random_state = random_state
             self.forecast_horizon = forecast_horizon
+            self.is_likelihood = predict_likelihood_parameters
             log_dir = project_root.joinpath(
                 f"logs/dartstcn/{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}"
             )
