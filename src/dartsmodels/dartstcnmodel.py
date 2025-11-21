@@ -55,6 +55,7 @@ class DartsTCNModel(DartsModelAdapter):
         optimizer_kwargs={"lr": 0.001},
         random_state=None,
         forecast_horizon=1,
+        predict_likelihood_parameters=False,
         *args,
         **kwargs):
         """
