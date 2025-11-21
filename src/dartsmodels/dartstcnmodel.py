@@ -13,7 +13,8 @@ from forcateri.data.adapterinput import AdapterInput
 from forcateri.model.modelexceptions import InvalidModelTypeError, ModelAdapterError
 from forcateri.model.dartsmodeladapter import DartsModelAdapter
 from forcateri.data.timeseries import TimeSeries
-from .defaultparamsmixin import DefaultParamsMixin
+
+from forcateri.utils.decorators import clover
 
 # from forcateri import project_root
 
@@ -35,7 +36,9 @@ from src import project_root
 #     random_state: Optional[int] = None
 #     likelihood: Optional[QuantileRegression] = QuantileRegression([0.1, 0.5, 0.9])
 
-class DartsTCNModel(DartsModelAdapter,DefaultParamsMixin):
+class DartsTCNModel(DartsModelAdapter):
+
+    @clover
     def __init__(        self,
         model: Optional[TCNModel] = None,
         quantiles=[0.1, 0.5, 0.9],
