@@ -91,7 +91,7 @@ class DartsTCNModel(DartsModelAdapter):
             Scaler for the covariates.
         """
 
-        super().__init__(model_name=model_name*args, **kwargs)
+        super().__init__(model_name=model_name,*args, **kwargs)
         self.quantiles = quantiles
         if model is not None:
             self.model = model
