@@ -41,6 +41,7 @@ class DartsTCNModel(DartsModelAdapter):
     @clover
     def __init__(        self,
         model: Optional[TCNModel] = None,
+        model_name: Optional[str] = None,
         quantiles=[0.1, 0.5, 0.9],
         input_chunk_length=7,
         output_chunk_length=5,
@@ -90,7 +91,7 @@ class DartsTCNModel(DartsModelAdapter):
             Scaler for the covariates.
         """
 
-        super().__init__(*args, **kwargs)
+        super().__init__(model_name=model_name*args, **kwargs)
         self.quantiles = quantiles
         if model is not None:
             self.model = model
