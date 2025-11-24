@@ -1,0 +1,18 @@
+    DartsTCNModel.__init__.model_name: TCN_1
+    DartsTCNModel.__init__.input_chunk_length: 7
+    DartsTCNModel.__init__.output_chunk_length: 5
+    DartsTCNModel.__init__.kernel_size: 3
+    DartsTCNModel.__init__.num_filters: 32
+    DartsTCNModel.__init__.dilation_base: 2
+    DartsTCNModel.__init__.num_layers: 3
+    DartsTCNModel.__init__.dropout: 0.1
+    DartsTCNModel.__init__.weight_norm: true
+    DartsTCNModel.__init__.n_epochs: 1
+    DartsTCNModel.__init__.batch_size: 2
+    DartsTCNModel.__init__.lr: 0.001
+    DartsTCNModel.__init__.random_state: null
+    DartsTCNModel.__init__.likelihood: QuantileRegression
+    DartsTCNModel.__init__.quantiles: [0.1, 0.5, 0.9]
+    DartsTCNModel.__init__.predict_likelihood_parameters: true
+    DartsTCNModel.__init__.rolling_window: true
+    DartsTCNModel.__init__.forecast_horizon: 5
