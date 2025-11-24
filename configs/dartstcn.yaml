@@ -1,3 +1,5 @@
+Models:
+  DartsTCNModel:
     DartsTCNModel.__init__.model_name: Config_TCN
     DartsTCNModel.__init__.input_chunk_length: 7
     DartsTCNModel.__init__.output_chunk_length: 5
@@ -16,3 +18,25 @@
     DartsTCNModel.__init__.predict_likelihood_parameters: true
     DartsTCNModel.__init__.rolling_window: true
     DartsTCNModel.__init__.forecast_horizon: 5
+
+
+DataSources: 
+  BaltBestAggregatedAPIData:
+    roles:
+      TARGET: [q_hca]
+      KNOWN: [temperature_outdoor_avg]
+      OBSERVED: ['temperature_1_max', 'temperature_2_max','temperature_room_avg']
+
+DataProvider:
+    splits: [0.33, 0.66]
+    
+Metrics:
+  DimwiseAggregatedQuantileLoss:
+    axes: [OFFSET]
+  DimwiseAggregatedMetric:
+    axes: [OFFSET]
+
+ClearML:
+  task:
+    project_name: ForeSightNEXT/BaltBest
+    task_name: Forcateri Pipeline Test
