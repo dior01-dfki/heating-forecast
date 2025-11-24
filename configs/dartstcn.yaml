@@ -1,4 +1,4 @@
-    DartsTCNModel.__init__.model_name: TCN_1
+    DartsTCNModel.__init__.model_name: Config_TCN
     DartsTCNModel.__init__.input_chunk_length: 7
     DartsTCNModel.__init__.output_chunk_length: 5
     DartsTCNModel.__init__.kernel_size: 3
