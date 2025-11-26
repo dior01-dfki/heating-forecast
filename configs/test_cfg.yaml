@@ -1,23 +1,21 @@
 Models:
-  DartsTCNModel:
-    DartsTCNModel.__init__.model_name: Config_TCN
-    DartsTCNModel.__init__.input_chunk_length: 7
-    DartsTCNModel.__init__.output_chunk_length: 5
-    DartsTCNModel.__init__.kernel_size: 3
-    DartsTCNModel.__init__.num_filters: 32
-    DartsTCNModel.__init__.dilation_base: 2
-    DartsTCNModel.__init__.num_layers: 3
-    DartsTCNModel.__init__.dropout: 0.1
-    DartsTCNModel.__init__.weight_norm: True
-    DartsTCNModel.__init__.n_epochs: 1
-    DartsTCNModel.__init__.batch_size: 2
-    DartsTCNModel.__init__.lr: 0.001
-    DartsTCNModel.__init__.random_state: null
-    DartsTCNModel.__init__.likelihood: QuantileRegression
-    DartsTCNModel.__init__.quantiles: [0.01, 0.5, 0.99]
-    DartsTCNModel.__init__.rolling_window: True
-    DartsTCNModel.__init__.forecast_horizon: 5
-
+    DartsTCNModel.model_name: Config_TCN
+    DartsTCNModel.input_chunk_length: 7
+    DartsTCNModel.output_chunk_length: 5
+    DartsTCNModel.kernel_size: 3
+    DartsTCNModel.num_filters: 32
+    DartsTCNModel.dilation_base: 2
+    DartsTCNModel.num_layers: 3
+    DartsTCNModel.dropout: 0.1
+    DartsTCNModel.weight_norm: True
+    DartsTCNModel.n_epochs: 1
+    DartsTCNModel.batch_size: 2
+    DartsTCNModel.lr: 0.001
+    DartsTCNModel.random_state: null
+    DartsTCNModel.likelihood: QuantileRegression
+    DartsTCNModel.quantiles: [0.01, 0.5, 0.99]
+    DartsTCNModel.rolling_window: True
+    DartsTCNModel.forecast_horizon: 5
 
 DataSources: 
   BaltBestAggregatedAPIData:
