@@ -16,6 +16,7 @@ Models:
     DartsTCNModel.quantiles: [0.01, 0.5, 0.99]
     DartsTCNModel.rolling_window: True
     DartsTCNModel.forecast_horizon: 5
+    DartsTCNModel.predict_likelihood_parameters: True
 
 DataSources: 
   BaltBestAggregatedAPIData:
