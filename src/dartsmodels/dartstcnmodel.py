@@ -38,7 +38,7 @@ from src import project_root
 
 class DartsTCNModel(DartsModelAdapter):
 
-    @clover
+    #@clover
     def __init__(        self,
         model: Optional[TCNModel] = None,
         model_name: Optional[str] = None,
