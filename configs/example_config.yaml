@@ -1,0 +1,12 @@
+configured_fn.config_only: config_cf
+configured_fn.code_and_config: config_co_cf
+configured_fn.config_and_cli: config_cf_cl
+configured_fn.code_config_and_cli: config_co_cf_cl
+configured_fn.code_only: config_co
+
+complex_type_cfg.list_from_cfg: [0.01, 0.02, 0.03]
+complex_type_cfg.list_from_cfg_overridden: [0.001, 0.002, 0.003]
+
+  TARGET: ['q_hca'],
+  KNOWN: ['temperature_outdoor_avg'],
+  OBSERVED: ['temperature_1_max', 'temperature_2_max','temperature_room_avg']
