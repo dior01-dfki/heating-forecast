@@ -1,10 +1,3 @@
-from argparse import ArgumentParser
-from ast import literal_eval
-from cmath import log
-from inspect import Parameter, signature
-import logging
-from typing import List
-import yaml
 
 from forcateri.reporting.dimwiseaggregatedmetric import DimwiseAggregatedMetric
 from forcateri.reporting.dimwiseaggregatedquantileloss import (
@@ -26,5 +19,9 @@ from forcateri.utils.config_utils import extract_config
 
 from darts.utils.likelihood_models import *
 
-from clover import clover, connect_config
+from clover import clover
+
+
+def main():
+    pass
 
