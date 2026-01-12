@@ -17,9 +17,9 @@ class BaltBestAggregatedAPIData(BaltBestAPIData):
     # dataset_project: str = "ForeSightNEXT/BaltBest/Forcateri"
     # dataset_name: str = "BaltBestAggregatedAPIData"
     # file_name: str = "showcase_data.csv"
-    dataset_project: str = "ForeSightNEXT/BaltBest/Forcateri"
-    dataset_name: str = "ForcateriPipelineTest"
-    file_name = 'pipeline_test.csv'
+    dataset_project: str = "ForeSightNEXT/BaltBest/resampled"
+    dataset_name: str = "ResampledTestData"
+    file_name = 'res_test.csv'
     
     def __init__(
         self,
@@ -93,10 +93,12 @@ class BaltBestAggregatedAPIData(BaltBestAPIData):
         ValueError
             If the time column is not present in the DataFrame.
         """
+        logger.debug("Fetching data from local cache.")
         # print(f"Local copy set to: {self.local_copy}")
         df = pd.read_csv(Path(self.local_copy) / self.file_name)
         #HERE ALIGNING THE COLUMN NAMES with prediction
         df.rename(columns={self.target:'target'},inplace=True)
+        logger.debug(f"DataFrame columns after renaming: {df.columns.tolist()}")
         df[self.time_col] = pd.to_datetime(df[self.time_col]).dt.tz_localize(None)
         df = (
             df.set_index(self.time_col)
@@ -137,6 +139,7 @@ class BaltBestAggregatedAPIData(BaltBestAPIData):
         ts_type: Optional[str] = "determ",
     ) -> TimeSeries:
         logger.info("Creating TimeSeries from DataFrame via class method.")
+        logger.debug(f"Input DataFrame columns: {df.columns.tolist()}")
         formatted = BaltBestAggregatedAPIData._build_internal_format(
             df, time_col, value_cols, freq=freq, ts_type=ts_type
         )
@@ -241,6 +244,8 @@ class BaltBestAggregatedAPIData(BaltBestAPIData):
             value_cols = df.columns[df.columns != time_col]
         elif isinstance(value_cols, str):
             value_cols = [value_cols]
+        
+        logger.debug(f"Building internal format with time_col: {time_col}, value_cols: {value_cols}, freq: {freq}, ts_type: {ts_type}")
         features = value_cols
         row_dim_names = ["offset", "time_stamp"]
         col_dim_names = ["feature", "representation"]
