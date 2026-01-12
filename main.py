@@ -79,7 +79,7 @@ def main_for_reference(config_path:str = './configs/test_cfg.yaml'):
     test_set = dp.get_test_set()
 
     #args = kwargs
-    clearml_rep = ClearMLReporter(test_set, models=model_adapters, metrics=metrics)
+    clearml_rep = ClearMLReporter(models=model_adapters, metrics=metrics)
 
     
     
