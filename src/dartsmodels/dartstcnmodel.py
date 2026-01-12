@@ -81,8 +81,8 @@ class DartsTCNModel(DartsModelAdapter):
                 pl_trainer_kwargs=trainer_kwargs,
             )
         self.forecast_horizon = kwargs.get("forecast_horizon", 1)
-        self.scaler_target = Scaler()
-        self.scaler_cov = Scaler()
+        # self.scaler_target = Scaler()
+        # self.scaler_cov = Scaler()
 
     def fit(
         self,
@@ -113,31 +113,31 @@ class DartsTCNModel(DartsModelAdapter):
             logging.error("Failed to fit a model, check the model params")
             raise ModelAdapterError(f"Failed to fit model: {e}")
 
-    def convert_input(self, input: List[AdapterInput]) -> Tuple[
-        List[DartsTimeSeries],
-        List[DartsTimeSeries],
-        List[DartsTimeSeries],
-        Optional[pd.DataFrame],
-    ]:
-        """
-        Converts the input data into the required format for the model, applying scaling transformations
-        to the target and observed time series.
+    # def convert_input(self, input: List[AdapterInput]) -> Tuple[
+    #     List[DartsTimeSeries],
+    #     List[DartsTimeSeries],
+    #     List[DartsTimeSeries],
+    #     Optional[pd.DataFrame],
+    # ]:
+    #     """
+    #     Converts the input data into the required format for the model, applying scaling transformations
+    #     to the target and observed time series.
 
-        Parameters:
-            data (List[AdapterInput]): A list of AdapterInput objects containing the input data.
+    #     Parameters:
+    #         data (List[AdapterInput]): A list of AdapterInput objects containing the input data.
 
-        Returns:
-            Tuple[List[DartsTimeSeries], List[DartsTimeSeries], List[DartsTimeSeries], Optional[pd.DataFrame]]:
-                - target: A list of scaled DartsTimeSeries objects representing the target time series.
-                - known: A list of DartsTimeSeries objects representing the known covariates.
-                - observed: A list of scaled DartsTimeSeries objects representing the observed covariates.
-                - static: An optional pandas DataFrame containing static covariates, if available.
-        """
+    #     Returns:
+    #         Tuple[List[DartsTimeSeries], List[DartsTimeSeries], List[DartsTimeSeries], Optional[pd.DataFrame]]:
+    #             - target: A list of scaled DartsTimeSeries objects representing the target time series.
+    #             - known: A list of DartsTimeSeries objects representing the known covariates.
+    #             - observed: A list of scaled DartsTimeSeries objects representing the observed covariates.
+    #             - static: An optional pandas DataFrame containing static covariates, if available.
+    #     """
 
-        target, known, observed, static = super().convert_input(input)
-        target = self.scaler_target.fit_transform(target)
-        observed = self.scaler_cov.fit_transform(observed)
-        return target, known, observed, static
+    #     target, known, observed, static = super().convert_input(input)
+    #     target = self.scaler_target.fit_transform(target)
+    #     observed = self.scaler_cov.fit_transform(observed)
+    #     return target, known, observed, static
 
     def predict(
         self,

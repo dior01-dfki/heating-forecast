@@ -10,6 +10,8 @@ from pathlib import Path
 
 from forcateri.data.timeseries import TimeSeries
 
+from clearml import Dataset
+
 logger = logging.getLogger(__name__)
 
 
@@ -18,8 +20,8 @@ class BaltBestAggregatedAPIData(BaltBestAPIData):
     # dataset_name: str = "BaltBestAggregatedAPIData"
     # file_name: str = "showcase_data.csv"
     dataset_project: str = "ForeSightNEXT/BaltBest/resampled"
-    dataset_name: str = "ResampledTestData"
-    file_name = 'res_test.csv'
+    dataset_name: str = "ResampledData"
+    file_name = 'resampled_data.csv'
     
     def __init__(
         self,
@@ -66,6 +68,25 @@ class BaltBestAggregatedAPIData(BaltBestAPIData):
         super().get_data()
         return self.ts
 
+    @staticmethod
+    def room_subset():
+
+        metadata = Dataset.get(
+            dataset_project='ForeSightNEXT/BaltBest',
+            dataset_name='BaltBestMetadata',
+            dataset_version='0.0.2',)
+        data_qa_path = metadata.get_local_copy()
+        data_qa_report = pd.read_csv(f"{data_qa_path}/data_qa_report.csv", index_col=[0,1])
+        acceptable_rooms = (
+            data_qa_report
+            .groupby(level='room_id')
+            .apply(lambda g: ((g['non_nan_ratio'] >= 0.8) & (g['non_zero_ratio'] > 0.3)).all())
+        )
+
+        # Get the list of room_ids that are True, empty if none
+        acceptable_room_ids = acceptable_rooms.index[acceptable_rooms].tolist()
+        return acceptable_room_ids
+
     def _fetch_from_cache(self):
         """
         Fetch data from a local CSV file, process it by resampling and grouping, and store it as a TimeSeries instance.
@@ -96,6 +117,9 @@ class BaltBestAggregatedAPIData(BaltBestAPIData):
         logger.debug("Fetching data from local cache.")
         # print(f"Local copy set to: {self.local_copy}")
         df = pd.read_csv(Path(self.local_copy) / self.file_name)
+
+        room_ids = self.room_subset()
+        df = df[df['room_id'].isin(room_ids)]
         #HERE ALIGNING THE COLUMN NAMES with prediction
         df.rename(columns={self.target:'target'},inplace=True)
         logger.debug(f"DataFrame columns after renaming: {df.columns.tolist()}")

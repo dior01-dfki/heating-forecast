@@ -8,6 +8,7 @@ import pandas as pd
 
 from src.baltbestapi.baltbestaggregatedapidata import BaltBestAggregatedAPIData
 from src.dartsmodels.dartstcnmodel import DartsTCNModel
+from src.dartsmodels.xgbmodel import dartsXGB
 from forcateri.data.dataprovider import DataProvider
 from forcateri.reporting.clearmlreporter import ClearMLReporter
 from forcateri.reporting.localresultreporter import LocalResultReporter
@@ -141,13 +142,16 @@ def main():
     }
     dp = DataProvider(data_sources=data_source, roles=[roles])
     model_adapters = []
+    #train_set = dp.get_train_set()
     test_set = dp.get_test_set()
+    #val_set = dp.get_val_set()
     #print(f"Test set: {test_set}")
     metrics = []
     metrics.append(
         DimwiseAggregatedQuantileLoss(axes=[OFFSET, FEATURE])
     )
-    model_adapters.append(DartsTCNModel(n_epochs=1, scaler_data=dp.get_train_set(), predict_likelihood_parameters=True))
+    #model_adapters.append(DartsTCNModel(n_epochs=1, scaler_data=dp.get_train_set(), predict_likelihood_parameters=True))
+    model_adapters.append(dartsXGB(scaler_data=dp.get_train_set()))
     rep = LocalResultReporter(test_set, models=model_adapters, metrics=metrics)
     pipe = Pipeline(
         dp=dp,
@@ -155,6 +159,25 @@ def main():
         reporter=rep,
     )
     pipe.run()
+def room_subset():
+
+        metadata = Dataset.get(
+            dataset_project='ForeSightNEXT/BaltBest',
+            dataset_name='BaltBestMetadata',
+            dataset_version='0.0.2',)
+        data_qa_path = metadata.get_local_copy()
+        data_qa_report = pd.read_csv(f"{data_qa_path}/data_qa_report.csv", index_col=[0,1])
+        acceptable_rooms = (
+            data_qa_report
+            .groupby(level='room_id')
+            .apply(lambda g: ((g['non_nan_ratio'] >= 0.8) & (g['non_zero_ratio'] > 0.3)).all())
+        )
+
+        # Get the list of room_ids that are True, empty if none
+        acceptable_room_ids = acceptable_rooms.index[acceptable_rooms].tolist()
+        return acceptable_room_ids
 if __name__ == "__main__":
     print("Starting main")
-    main()
+    #main()
+    rooms = room_subset()
+    print(f"Acceptable rooms: {rooms}")
