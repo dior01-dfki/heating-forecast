@@ -98,23 +98,6 @@ def main_for_reference(config_path:str = './configs/test_cfg.yaml'):
     )
     cml_pipe.run()
 
-# def fetch_data():
-#     dataset = Dataset.get(dataset_name="ResampledData", dataset_project="ForeSightNEXT/BaltBest/resampled")
-#     dataset_path = dataset.get_local_copy()
-#     resampled_data = pd.read_csv(f"{dataset_path}/resampled_data.csv")
-
-#     dataset_qa = Dataset.get(dataset_name='BaltBestMetadata', dataset_project='ForeSightNEXT/BaltBest')
-#     dataset_qa_path = dataset_qa.get_local_copy()
-#     data_qa_report = pd.read_csv(f"{dataset_qa_path}/data_qa_report.csv", index_col=[0,1])
-
-#     acceptable_rooms = (
-#         data_qa_report
-#         .groupby(level='room_id')
-#         .apply(lambda g: ((g['non_nan_ratio'] >= 0.8) & (g['non_zero_ratio'] > 0.3)).all())
-#     )
-#     acceptable_rooms_ids = acceptable_rooms.index[acceptable_rooms].tolist()
-#     filtered_data = resampled_data[resampled_data['room_id'].isin(acceptable_rooms_ids)].copy()
-#     return filtered_data
 
 def main():
     #data = fetch_data()
