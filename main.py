@@ -160,7 +160,7 @@ def main():
     # )
     # pipe.run()
     
-    clearml_rep = ClearMLReporter(dp.get_test_set(), models=model_adapters, metrics=metrics)
+    clearml_rep = ClearMLReporter(test_data=dp.get_test_set(), models=model_adapters, metrics=metrics)
 
     
     
