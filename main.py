@@ -159,25 +159,27 @@ def main():
         reporter=rep,
     )
     pipe.run()
-def room_subset():
+    
+    clearml_rep = ClearMLReporter(test_set, models=model_adapters, metrics=metrics)
 
-        metadata = Dataset.get(
-            dataset_project='ForeSightNEXT/BaltBest',
-            dataset_name='BaltBestMetadata',
-            dataset_version='0.0.2',)
-        data_qa_path = metadata.get_local_copy()
-        data_qa_report = pd.read_csv(f"{data_qa_path}/data_qa_report.csv", index_col=[0,1])
-        acceptable_rooms = (
-            data_qa_report
-            .groupby(level='room_id')
-            .apply(lambda g: ((g['non_nan_ratio'] >= 0.8) & (g['non_zero_ratio'] > 0.3)).all())
-        )
+    
+    
+    cml_pipe = ClearMLSingleTaskPipeline(
+        dp=dp,
+        model_adapter=model_adapters,
+        reporter=clearml_rep,
+        project_name='ForeSightNEXT/BaltBest',
+        task_name='XGB_test',
+        #config_path="configs/pipeline.yaml",
+        init_args=[],
+        requirements="./requirements.txt",
+        docker = "dior00002/heating-forecast2:v1",
+        repo="git@github.com:dior01-dfki/heating-forecast.git",
+        branch="edz_train"
+    )
+    cml_pipe.run()
 
-        # Get the list of room_ids that are True, empty if none
-        acceptable_room_ids = acceptable_rooms.index[acceptable_rooms].tolist()
-        return acceptable_room_ids
 if __name__ == "__main__":
     print("Starting main")
-    #main()
-    rooms = room_subset()
-    print(f"Acceptable rooms: {rooms}")
+    main()
+    
