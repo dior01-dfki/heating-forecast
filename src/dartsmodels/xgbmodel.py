@@ -64,7 +64,9 @@ class dartsXGB(DartsModelAdapter):
         target_chunks = extract_subseries(target, min_gap_size=4, mode="any")
         known_chunks = extract_subseries(known, min_gap_size=4, mode="any") if known is not None else None
         observed_chunks = extract_subseries(observed, min_gap_size=4, mode="any") if observed is not None else None
-        
+        print(f"Number of target chunks after extraction: {len(target_chunks)}")
+        print(f"Number of known chunks after extraction: {len(known_chunks) if known_chunks is not None else 'N/A'}")
+        print(f"Number of observed chunks after extraction: {len(observed_chunks) if observed_chunks is not None else 'N/A'}")
         self.scaler_target = Scaler().fit(target)
         self.scaler_known = Scaler().fit(known) if known is not None else None
         self.scaler_observed = Scaler().fit(observed) if observed is not None else None
