@@ -126,7 +126,7 @@ def main():
     dp = DataProvider(data_sources=data_source, roles=[roles])
     model_adapters = []
     #train_set = dp.get_train_set()
-    #test_set = dp.get_test_set()
+    test_set = dp.get_test_set()
     #val_set = dp.get_val_set()
     #print(f"Test set: {test_set}")
     metrics = []
@@ -134,8 +134,8 @@ def main():
         DimwiseAggregatedQuantileLoss(axes=[OFFSET, FEATURE])
     )
     #model_adapters.append(DartsTCNModel(n_epochs=1, scaler_data=dp.get_train_set(), predict_likelihood_parameters=True))
-    model_adapters.append(dartsXGB())
-    # rep = LocalResultReporter(test_set, models=model_adapters, metrics=metrics)
+    # model_adapters.append(dartsXGB())
+    # rep = LocalResultReporter( models=model_adapters, metrics=metrics)
     # pipe = Pipeline(
     #     dp=dp,
     #     model_adapter=model_adapters,
