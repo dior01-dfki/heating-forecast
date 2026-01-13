@@ -5,6 +5,10 @@ from typing import Optional
 from darts.dataprocessing.transformers import Scaler
 from forcateri.data.adapterinput import AdapterInput
 from typing import List
+import pandas as pd
+import pickle
+from darts import TimeSeries as DartsTimeSeries
+from forcateri.data.timeseries import TimeSeries
 
 class dartsXGB(DartsModelAdapter):
     def __init__(self, *args, model: Optional[XGBModel] = None, **kwargs):
@@ -19,13 +23,14 @@ class dartsXGB(DartsModelAdapter):
                 learning_rate=kwargs.get("learning_rate", 0.1),
                 max_depth=kwargs.get("max_depth", 6),
                 random_state=kwargs.get("random_state", None),
-                    lags=7,
-    lags_past_covariates=7,
+                lags=7,
+                lags_past_covariates=7,
             )
-    
+
     def fit(self, train_data, val_data):
         super().fit(train_data, val_data)
-    
+
+
     def convert_input(self, input):
         """
         Converts input data to Darts format and applies scaling transformations.
@@ -62,17 +67,35 @@ class dartsXGB(DartsModelAdapter):
         - Scalers transform data to have zero mean and unit variance by default.
         """
         target, known, observed, static = super().convert_input(input)
-
-        target_chunks = extract_subseries(target, min_gap_size=4, mode="any")
-        known_chunks = extract_subseries(known, min_gap_size=4, mode="any") if known is not None else None
-        observed_chunks = extract_subseries(observed, min_gap_size=4, mode="any") if observed is not None else None
-        print(f"Number of target chunks after extraction: {len(target_chunks)}")
-        print(f"Number of known chunks after extraction: {len(known_chunks) if known_chunks is not None else 'N/A'}")
-        print(f"Number of observed chunks after extraction: {len(observed_chunks) if observed_chunks is not None else 'N/A'}")
-        self.scaler_target = Scaler().fit(target)
-        self.scaler_known = Scaler().fit(known) if known is not None else None
-        self.scaler_observed = Scaler().fit(observed) if observed is not None else None
         
+
+
+        target_chunks, known_chunks, observed_chunks = [], [], []
+
+        for t_idx, t in enumerate(target):
+            t_subs = extract_subseries(t, min_gap_size=4, mode="any")
+            
+            for sub in t_subs:
+                target_chunks.append(sub)
+                
+                # Slice covariates at the same time index range as this target subseries
+                start, end = sub.start_time(), sub.end_time()
+                
+                if known:
+                    k_sub = known[t_idx].slice(start, end)
+                    known_chunks.append(k_sub)
+                if observed:
+                    o_sub = observed[t_idx].slice(start, end)
+                    observed_chunks.append(o_sub)
+
+        print(f"Number of target chunks after extraction: {len(target_chunks)}")
+        print(
+            f"Number of known chunks after extraction: {len(known_chunks) if known_chunks is not None else 'N/A'}"
+        )
+        print(
+            f"Number of observed chunks after extraction: {len(observed_chunks) if observed_chunks is not None else 'N/A'}"
+        )
+
         target = self.scaler_target.transform(target)
         if self.scaler_known:
             known = self.scaler_known.transform(known)
@@ -80,7 +103,7 @@ class dartsXGB(DartsModelAdapter):
             observed = self.scaler_observed.transform(observed)
 
         return target_chunks, known_chunks, observed_chunks, static
-    
+
     def fit(
         self,
         train_data: List[AdapterInput],
@@ -120,8 +143,11 @@ class dartsXGB(DartsModelAdapter):
         """
 
         target, known, observed, static = self.convert_input(train_data)
-        self.target_col_names = [t.components[0] for t in target]
-
+        try:
+            self.target_col_names = [t.components[0] for t in target]
+        except Exception as e:
+            print(f"Error extracting target column names: {e}")
+            #self.target_col_names = [t[0].components[0] for t in train_data]
 
         fit_args = {"series": target}
         fit_args.update(self._get_covariate_args(known, observed, static))
@@ -130,7 +156,6 @@ class dartsXGB(DartsModelAdapter):
             val_target, val_known, val_observed, val_static = self.convert_input(
                 val_data
             )
-
 
             fit_args["val_series"] = val_target
             val_covariate_args = self._get_covariate_args(
