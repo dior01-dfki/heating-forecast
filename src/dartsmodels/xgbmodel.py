@@ -3,6 +3,8 @@ from darts.models import XGBModel
 from darts.utils.missing_values import extract_subseries
 from typing import Optional
 from darts.dataprocessing.transformers import Scaler
+from forcateri.data.adapterinput import AdapterInput
+from typing import List
 
 class dartsXGB(DartsModelAdapter):
     def __init__(self, *args, model: Optional[XGBModel] = None, **kwargs):
@@ -78,3 +80,64 @@ class dartsXGB(DartsModelAdapter):
             observed = self.scaler_observed.transform(observed)
 
         return target_chunks, known_chunks, observed_chunks, static
+    
+    def fit(
+        self,
+        train_data: List[AdapterInput],
+        val_data: Optional[List[AdapterInput]] = None,
+    ) -> None:
+        """
+        Fits the Darts forecasting model using the provided training and validation data.
+
+        This method converts the input data to Darts format, prepares the training arguments
+        including any supported covariates (future, past, or static), and optionally includes
+        validation data with the appropriate prefixes. The model is then fitted using these
+        prepared arguments.
+
+        Parameters
+        ----------
+        train_data : List[AdapterInput]
+            A list of AdapterInput objects containing the training data, including target
+            series and any available covariates (known/future, observed/past, and static).
+        val_data : Optional[List[AdapterInput]], default=None
+            An optional list of AdapterInput objects containing validation data. If provided,
+            validation series and covariates will be passed to the model's fit method with
+            'val_' prefixes.
+
+        Returns
+        -------
+        None
+            This method modifies the model in-place and does not return a value.
+
+        Notes
+        -----
+        - The method automatically handles covariate support detection based on the model's
+          capabilities (supports_future_covariates, supports_past_covariates, etc.).
+        - Target column names are stored in self.target_col_names for later use in predictions.
+        - If scalers are configured, they will be applied during the convert_input step.
+        - Validation covariates are automatically prefixed with 'val_' to match Darts API
+          requirements.
+        """
+
+        target, known, observed, static = self.convert_input(train_data)
+        self.target_col_names = [t.components[0] for t in target]
+
+
+        fit_args = {"series": target}
+        fit_args.update(self._get_covariate_args(known, observed, static))
+
+        if val_data is not None:
+            val_target, val_known, val_observed, val_static = self.convert_input(
+                val_data
+            )
+
+
+            fit_args["val_series"] = val_target
+            val_covariate_args = self._get_covariate_args(
+                val_known, val_observed, val_static
+            )
+            # Prefix validation covariate keys with 'val_'
+            for key, value in val_covariate_args.items():
+                fit_args[f"val_{key}"] = value
+
+        self.model.fit(**fit_args)
