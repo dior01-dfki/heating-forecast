@@ -10,7 +10,7 @@ from pathlib import Path
 
 from forcateri.data.timeseries import TimeSeries
 
-from clearml import Dataset
+from clearml import Dataset, Task
 
 logger = logging.getLogger(__name__)
 
@@ -120,6 +120,9 @@ class BaltBestAggregatedAPIData(BaltBestAPIData):
 
         room_ids = self.room_subset()
         df = df[df['room_id'].isin(room_ids)]
+        out_path = Path(self.local_copy) / 'acceptable_rooms.csv'
+        df.to_csv(out_path, index=False)
+        Task.current_task().upload_artifact(name='acceptable_rooms', artifact_object=out_path)
         #HERE ALIGNING THE COLUMN NAMES with prediction
         df.rename(columns={self.target:'target'},inplace=True)
         logger.debug(f"DataFrame columns after renaming: {df.columns.tolist()}")
