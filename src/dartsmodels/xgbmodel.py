@@ -9,27 +9,43 @@ import pandas as pd
 import pickle
 from darts import TimeSeries as DartsTimeSeries
 from forcateri.data.timeseries import TimeSeries
+from clover import clover
+
 
 class dartsXGB(DartsModelAdapter):
-    def __init__(self, *args, model: Optional[XGBModel] = None, **kwargs):
+
+    @clover
+    def __init__(self, 
+                 model: Optional[XGBModel] = None, 
+                 model_name: Optional[str] = None,
+                 input_chunk_length: int = 7,
+                 output_chunk_length: int = 5,
+                 n_estimators: int = 100,
+                 learning_rate: float = 0.1,
+                 max_depth: int = 6,
+                 random_state: Optional[int] = None,
+                 lags: int = 7,
+                 lags_past_covariates: int = 7,
+                 *args, 
+                 **kwargs):
         super().__init__(*args, **kwargs)
         if model is not None:
             self.model = model
         else:
             self.model = XGBModel(
-                input_chunk_length=kwargs.get("input_chunk_length", 7),
-                output_chunk_length=kwargs.get("output_chunk_length", 5),
-                n_estimators=kwargs.get("n_estimators", 100),
-                learning_rate=kwargs.get("learning_rate", 0.1),
-                max_depth=kwargs.get("max_depth", 6),
-                random_state=kwargs.get("random_state", None),
-                lags=7,
-                lags_past_covariates=7,
+                input_chunk_length=input_chunk_length,
+                output_chunk_length=output_chunk_length,
+                n_estimators=n_estimators,
+                learning_rate=learning_rate,
+                max_depth=max_depth,
+                random_state=random_state,
+                lags=lags,
+                lags_past_covariates=lags_past_covariates,
             )
+            self.model_name = model_name if model_name else "dartsXGB"
 
     def fit(self, train_data, val_data):
         super().fit(train_data, val_data)
-
 
     def convert_input(self, input):
         """
@@ -67,20 +83,18 @@ class dartsXGB(DartsModelAdapter):
         - Scalers transform data to have zero mean and unit variance by default.
         """
         target, known, observed, static = super().convert_input(input)
-        
-
 
         target_chunks, known_chunks, observed_chunks = [], [], []
 
         for t_idx, t in enumerate(target):
             t_subs = extract_subseries(t, min_gap_size=4, mode="any")
-            
+
             for sub in t_subs:
                 target_chunks.append(sub)
-                
+
                 # Slice covariates at the same time index range as this target subseries
                 start, end = sub.start_time(), sub.end_time()
-                
+
                 if known:
                     k_sub = known[t_idx].slice(start, end)
                     known_chunks.append(k_sub)
@@ -147,7 +161,7 @@ class dartsXGB(DartsModelAdapter):
             self.target_col_names = [t.components[0] for t in target]
         except Exception as e:
             print(f"Error extracting target column names: {e}")
-            #self.target_col_names = [t[0].components[0] for t in train_data]
+            # self.target_col_names = [t[0].components[0] for t in train_data]
 
         fit_args = {"series": target}
         fit_args.update(self._get_covariate_args(known, observed, static))

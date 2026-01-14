@@ -112,7 +112,7 @@ def main():
             "room_side_hca_temp"
         ],
         target = "hca_units",
-        local_copy='data/'
+        #local_copy='data/'
         )
     data_source.append(ds)
     roles = {
@@ -132,36 +132,36 @@ def main():
     #print(f"Test set: {test_set}")
     metrics = []
     metrics.append(
-        DimwiseAggregatedQuantileLoss(axes=[OFFSET, FEATURE])
+        DimwiseAggregatedMetric(axes=[OFFSET, FEATURE])
     )
     #model_adapters.append(DartsTCNModel(n_epochs=1, scaler_data=dp.get_train_set(), predict_likelihood_parameters=True))
     model_adapters.append(dartsXGB())
-    rep = LocalResultReporter(  models=model_adapters, metrics=metrics)
-    pipe = Pipeline(
-        dp=dp,
-        model_adapter=model_adapters,
-        reporter=rep,
-    )
-    pipe.run()
+    # rep = LocalResultReporter(  models=model_adapters, metrics=metrics)
+    # pipe = Pipeline(
+    #     dp=dp,
+    #     model_adapter=model_adapters,
+    #     reporter=rep,
+    # )
+    # pipe.run()
     
-    # clearml_rep = ClearMLReporter( models=model_adapters, metrics=metrics)
+    clearml_rep = ClearMLReporter( models=model_adapters, metrics=metrics)
 
     
     
-    # cml_pipe = ClearMLSingleTaskPipeline(
-    #     dp=dp,
-    #     model_adapter=model_adapters,
-    #     reporter=clearml_rep,
-    #     project_name='ForeSightNEXT/BaltBest',
-    #     task_name='XGB_test',
-    #     #config_path="configs/pipeline.yaml",
-    #     init_args=[],
-    #     requirements="./requirements.txt",
-    #     docker = "dior00002/heating-forecast2:v1",
-    #     repo="git@github.com:dior01-dfki/heating-forecast.git",
-    #     branch="edz_train"
-    # )
-    # cml_pipe.run()
+    cml_pipe = ClearMLSingleTaskPipeline(
+        dp=dp,
+        model_adapter=model_adapters,
+        reporter=clearml_rep,
+        project_name='ForeSightNEXT/BaltBest',
+        task_name='XGB_test',
+        #config_path="configs/pipeline.yaml",
+        init_args=[],
+        requirements="./requirements.txt",
+        docker = "dior00002/heating-forecast2:v1",
+        repo="git@github.com:dior01-dfki/heating-forecast.git",
+        branch="edz_train"
+    )
+    cml_pipe.run()
 
 if __name__ == "__main__":
     print("Starting main")

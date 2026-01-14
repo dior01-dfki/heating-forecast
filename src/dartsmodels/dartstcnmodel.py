@@ -14,11 +14,32 @@ from forcateri.model.modelexceptions import InvalidModelTypeError, ModelAdapterE
 from forcateri.model.dartsmodeladapter import DartsModelAdapter
 from forcateri.data.timeseries import TimeSeries
 #from forcateri import project_root
-
+from clover import clover
 from src import project_root
 
 class DartsTCNModel(DartsModelAdapter):
-    def __init__(self, *args, model: Optional[TCNModel] = None, **kwargs):
+
+    @clover
+    def __init__(        self,
+        model: Optional[TCNModel] = None,
+        model_name: Optional[str] = None,
+        quantiles=[0.1, 0.5, 0.9],
+        input_chunk_length=7,
+        output_chunk_length=5,
+        kernel_size=3,
+        num_filters=32,
+        dilation_base=2,
+        num_layers=3,
+        dropout=0.1,
+        weight_norm=True,
+        n_epochs=1,
+        batch_size=8,
+        optimizer_kwargs={"lr": 0.001},
+        random_state=None,
+        forecast_horizon=1,
+        predict_likelihood_parameters=False,
+        *args,
+        **kwargs):
         """
         Initializes the Darts TCNModel with specified parameters and scalers.
         Parameters
@@ -51,12 +72,25 @@ class DartsTCNModel(DartsModelAdapter):
             Scaler for the covariates.
         """
 
-        super().__init__(*args, **kwargs)
-        self.quantiles = kwargs.get("quantiles", [0.1, 0.5, 0.9])
+        super().__init__(model_name=model_name,*args, **kwargs)
+        self.quantiles = quantiles
         if model is not None:
             self.model = model
         else:
-            self.input_chunk_length = kwargs.get("input_chunk_length", 7)
+            self.input_chunk_length = input_chunk_length
+            self.output_chunk_length = output_chunk_length
+            self.kernel_size = kernel_size
+            self.num_filters = num_filters
+            self.dilation_base = dilation_base
+            self.num_layers = num_layers
+            self.dropout = dropout
+            self.weight_norm = weight_norm
+            self.n_epochs = n_epochs
+            self.batch_size = batch_size
+            self.optimizer_kwargs = optimizer_kwargs
+            self.random_state = random_state
+            self.forecast_horizon = forecast_horizon
+            self.is_likelihood = predict_likelihood_parameters
             log_dir = project_root.joinpath(
                 f"logs/dartstcn/{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}"
             )
@@ -64,20 +98,18 @@ class DartsTCNModel(DartsModelAdapter):
             trainer_kwargs = dict(logger=[logger])
             self.model = TCNModel(
                 input_chunk_length=self.input_chunk_length,
-                output_chunk_length=kwargs.get("output_chunk_length", 5),
-                kernel_size=kwargs.get("kernel_size", 3),
-                num_filters=kwargs.get("num_filters", 32),
-                dilation_base=kwargs.get("dilation_base", 2),
-                num_layers=kwargs.get("num_layers", 3),
-                dropout=kwargs.get("dropout", 0.1),
-                weight_norm=kwargs.get("weight_norm", True),
-                n_epochs=kwargs.get("n_epochs", 1),
-                batch_size=kwargs.get("batch_size", 8),
-                optimizer_kwargs=kwargs.get("optimizer_kwargs", {"lr": 1e-3}),
-                random_state=kwargs.get("random_state", None),
-                likelihood=kwargs.get(
-                    "likelihood", QuantileRegression(quantiles=self.quantiles)
-                ),
+                output_chunk_length=self.output_chunk_length,
+                kernel_size=self.kernel_size,
+                num_filters=self.num_filters,
+                dilation_base=self.dilation_base,
+                num_layers=self.num_layers,
+                dropout=self.dropout,
+                weight_norm=self.weight_norm,
+                n_epochs=self.n_epochs,
+                batch_size=self.batch_size,
+                optimizer_kwargs=self.optimizer_kwargs,
+                random_state=self.random_state,
+                likelihood=kwargs.get("likelihood", QuantileRegression(self.quantiles)),
                 pl_trainer_kwargs=trainer_kwargs,
             )
         self.forecast_horizon = kwargs.get("forecast_horizon", 1)

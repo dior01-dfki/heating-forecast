@@ -186,3 +186,5 @@ logs/
 outputs/
 reports/
 my_saved_plots/
+
+data/
