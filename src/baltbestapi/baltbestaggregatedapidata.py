@@ -16,12 +16,12 @@ logger = logging.getLogger(__name__)
 
 
 class BaltBestAggregatedAPIData(BaltBestAPIData):
-    dataset_project: str = "ForeSightNEXT/BaltBest/resampled"
-    dataset_name: str = "AcceptableRooms"
-    file_name: str = "acceptable_rooms.csv"
     # dataset_project: str = "ForeSightNEXT/BaltBest/resampled"
-    # dataset_name: str = "ResampledData"
-    # file_name = 'resampled_data.csv'
+    # dataset_name: str = "AcceptableRooms"
+    # file_name: str = "acceptable_rooms.csv"
+    dataset_project: str = "ForeSightNEXT/BaltBest/resampled"
+    dataset_name: str = "ResampledData"
+    file_name = 'resampled_data.csv'
     
     def __init__(
         self,
@@ -122,6 +122,8 @@ class BaltBestAggregatedAPIData(BaltBestAPIData):
         df = df[df['room_id'].isin(room_ids)]
         out_path = Path(self.local_copy) / 'acceptable_rooms.csv'
         df.to_csv(out_path, index=False)
+
+        Task.current_task().upload_artifact(name='acceptable_rooms', artifact_object=out_path)
         #HERE ALIGNING THE COLUMN NAMES with prediction
         df.rename(columns={self.target:'target'},inplace=True)
         logger.debug(f"DataFrame columns after renaming: {df.columns.tolist()}")

@@ -9,6 +9,7 @@ import pandas as pd
 from src.baltbestapi.baltbestaggregatedapidata import BaltBestAggregatedAPIData
 from src.dartsmodels.dartstcnmodel import DartsTCNModel
 from src.dartsmodels.xgbmodel import dartsXGB
+from src.dartsmodels.lrmodel import DartsLRModel
 from forcateri.data.dataprovider import DataProvider
 from forcateri.reporting.clearmlreporter import ClearMLReporter
 from forcateri.reporting.localresultreporter import LocalResultReporter
@@ -76,7 +77,7 @@ def main_for_reference(config_path:str = './configs/test_cfg.yaml'):
         DimwiseAggregatedMetric(axes=axes2)
     )
     dp = DataProvider(data_sources=data_sources, roles=[roles])
-    test_set = dp.get_test_set()
+    #test_set = dp.get_test_set()
 
     #args = kwargs
     clearml_rep = ClearMLReporter(models=model_adapters, metrics=metrics)
@@ -112,7 +113,7 @@ def main():
             "room_side_hca_temp"
         ],
         target = "hca_units",
-        #local_copy='data/'
+        local_copy='data/'
         )
     data_source.append(ds)
     roles = {
@@ -127,41 +128,51 @@ def main():
     dp = DataProvider(data_sources=data_source, roles=[roles])
     model_adapters = []
     #train_set = dp.get_train_set()
-    test_set = dp.get_test_set()
+    #test_set = dp.get_test_set()
     #val_set = dp.get_val_set()
     #print(f"Test set: {test_set}")
     metrics = []
     metrics.append(
-        DimwiseAggregatedMetric(axes=[OFFSET, FEATURE])
+        DimwiseAggregatedMetric(axes=[OFFSET])
+    )
+    metrics.append(
+        DimwiseAggregatedQuantileLoss(axes=[OFFSET])
     )
     #model_adapters.append(DartsTCNModel(n_epochs=1, scaler_data=dp.get_train_set(), predict_likelihood_parameters=True))
-    model_adapters.append(dartsXGB())
-    # rep = LocalResultReporter(  models=model_adapters, metrics=metrics)
-    # pipe = Pipeline(
-    #     dp=dp,
-    #     model_adapter=model_adapters,
-    #     reporter=rep,
-    # )
-    # pipe.run()
+    #model_adapters.append(dartsXGB())
+    lrmodel = DartsLRModel(
+        lags_past_covariates=24,
+        lags_future_covariates=24,
+        output_chunk_length=12,
+        quantiles=[0.1, 0.5, 0.9],
+    )
+    model_adapters.append(lrmodel)
+    rep = LocalResultReporter(  models=model_adapters, metrics=metrics)
+    pipe = Pipeline(
+        dp=dp,
+        model_adapter=model_adapters,
+        reporter=rep,
+    )
+    pipe.run()
     
-    clearml_rep = ClearMLReporter( models=model_adapters, metrics=metrics)
+    # clearml_rep = ClearMLReporter( models=model_adapters, metrics=metrics)
 
     
     
-    cml_pipe = ClearMLSingleTaskPipeline(
-        dp=dp,
-        model_adapter=model_adapters,
-        reporter=clearml_rep,
-        project_name='ForeSightNEXT/BaltBest',
-        task_name='XGB_test',
-        #config_path="configs/pipeline.yaml",
-        init_args=[],
-        requirements="./requirements.txt",
-        docker = "dior00002/heating-forecast2:v1",
-        repo="git@github.com:dior01-dfki/heating-forecast.git",
-        branch="edz_train"
-    )
-    cml_pipe.run()
+    # cml_pipe = ClearMLSingleTaskPipeline(
+    #     dp=dp,
+    #     model_adapter=model_adapters,
+    #     reporter=clearml_rep,
+    #     project_name='ForeSightNEXT/BaltBest',
+    #     task_name='XGB_test',
+    #     #config_path="configs/pipeline.yaml",
+    #     init_args=[],
+    #     requirements="./requirements.txt",
+    #     docker = "dior00002/heating-forecast2:v1",
+    #     repo="git@github.com:dior01-dfki/heating-forecast.git",
+    #     branch="edz_train"
+    # )
+    # cml_pipe.run()
 
 if __name__ == "__main__":
     print("Starting main")
