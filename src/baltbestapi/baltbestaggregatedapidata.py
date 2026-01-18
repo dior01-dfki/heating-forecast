@@ -118,12 +118,12 @@ class BaltBestAggregatedAPIData(BaltBestAPIData):
         # print(f"Local copy set to: {self.local_copy}")
         df = pd.read_csv(Path(self.local_copy) / self.file_name)
 
-        room_ids = self.room_subset()
-        df = df[df['room_id'].isin(room_ids)]
-        out_path = Path(self.local_copy) / 'acceptable_rooms.csv'
-        df.to_csv(out_path, index=False)
+        # room_ids = self.room_subset()
+        # df = df[df['room_id'].isin(room_ids)]
+        # out_path = Path(self.local_copy) / 'acceptable_rooms.csv'
+        # df.to_csv(out_path, index=False)
 
-        Task.current_task().upload_artifact(name='acceptable_rooms', artifact_object=out_path)
+        #Task.current_task().upload_artifact(name='acceptable_rooms', artifact_object=out_path)
         #HERE ALIGNING THE COLUMN NAMES with prediction
         df.rename(columns={self.target:'target'},inplace=True)
         logger.debug(f"DataFrame columns after renaming: {df.columns.tolist()}")

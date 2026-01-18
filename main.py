@@ -147,32 +147,32 @@ def main():
         quantiles=[0.1, 0.5, 0.9],
     )
     model_adapters.append(lrmodel)
-    # rep = LocalResultReporter(  models=model_adapters, metrics=metrics)
-    # pipe = Pipeline(
-    #     dp=dp,
-    #     model_adapter=model_adapters,
-    #     reporter=rep,
-    # )
-    # pipe.run()
+    rep = LocalResultReporter(  models=model_adapters, metrics=metrics)
+    pipe = Pipeline(
+        dp=dp,
+        model_adapter=model_adapters,
+        reporter=rep,
+    )
+    pipe.run()
     
-    clearml_rep = ClearMLReporter( models=model_adapters, metrics=metrics)
+    # clearml_rep = ClearMLReporter( models=model_adapters, metrics=metrics)
 
     
     
-    cml_pipe = ClearMLSingleTaskPipeline(
-        dp=dp,
-        model_adapter=model_adapters,
-        reporter=clearml_rep,
-        project_name='ForeSightNEXT/BaltBest',
-        task_name='LR baseline model test',
-        #config_path="configs/pipeline.yaml",
-        init_args=[],
-        requirements="./requirements.txt",
-        docker = "dior00002/heating-forecast2:v1",
-        repo="git@github.com:dior01-dfki/heating-forecast.git",
-        branch="edz_train"
-    )
-    cml_pipe.run()
+    # cml_pipe = ClearMLSingleTaskPipeline(
+    #     dp=dp,
+    #     model_adapter=model_adapters,
+    #     reporter=clearml_rep,
+    #     project_name='ForeSightNEXT/BaltBest',
+    #     task_name='LR baseline model test',
+    #     #config_path="configs/pipeline.yaml",
+    #     init_args=[],
+    #     requirements="./requirements.txt",
+    #     docker = "dior00002/heating-forecast2:v1",
+    #     repo="git@github.com:dior01-dfki/heating-forecast.git",
+    #     branch="edz_train"
+    # )
+    #cml_pipe.run()
 
 if __name__ == "__main__":
     print("Starting main")
