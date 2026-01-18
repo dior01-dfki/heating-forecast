@@ -16,12 +16,12 @@ logger = logging.getLogger(__name__)
 
 
 class BaltBestAggregatedAPIData(BaltBestAPIData):
-    # dataset_project: str = "ForeSightNEXT/BaltBest/resampled"
-    # dataset_name: str = "AcceptableRooms"
-    # file_name: str = "acceptable_rooms.csv"
     dataset_project: str = "ForeSightNEXT/BaltBest/resampled"
-    dataset_name: str = "ResampledData"
-    file_name = 'resampled_data.csv'
+    dataset_name: str = "AcceptableRooms"
+    file_name: str = "acceptable_rooms.csv"
+    # dataset_project: str = "ForeSightNEXT/BaltBest/resampled"
+    # dataset_name: str = "ResampledData"
+    # file_name = 'resampled_data.csv'
     
     def __init__(
         self,
