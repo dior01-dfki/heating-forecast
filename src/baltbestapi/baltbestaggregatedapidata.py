@@ -172,7 +172,7 @@ class BaltBestAggregatedAPIData(BaltBestAPIData):
             df, time_col, value_cols, freq=freq, ts_type=ts_type
         )
 
-        return TimeSeries(formatted)
+        return TimeSeries(formatted, freq=freq)
 
     def _from_group_df(
         self,
