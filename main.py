@@ -113,7 +113,7 @@ def main():
             "room_side_hca_temp"
         ],
         target = "hca_units",
-        local_copy='data/'
+        #local_copy='data/'
         )
     data_source.append(ds)
     roles = {
@@ -164,7 +164,7 @@ def main():
         model_adapter=model_adapters,
         reporter=clearml_rep,
         project_name='ForeSightNEXT/BaltBest',
-        task_name='XGB_test',
+        task_name='LR baseline model test',
         #config_path="configs/pipeline.yaml",
         init_args=[],
         requirements="./requirements.txt",
