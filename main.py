@@ -142,7 +142,7 @@ def main():
     #model_adapters.append(dartsXGB())
     lrmodel = DartsLRModel(
         lags_past_covariates=24,
-        lags_future_covariates=24,
+        lags_future_covariates=list(range(24)),
         output_chunk_length=12,
         quantiles=[0.1, 0.5, 0.9],
     )
