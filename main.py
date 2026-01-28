@@ -19,7 +19,7 @@ from forcateri.controls.clearmlsingletaskpipeline import ClearMLSingleTaskPipeli
 from pathlib import Path
 #from forcateri.utils.config_utils import extract_config
 from forcateri.data.seriesrole import SeriesRole
-from clearml import Dataset
+from clearml import Dataset, Task
 
 from darts.utils.likelihood_models import *
 import yaml
@@ -121,7 +121,10 @@ FEATURE, REPRESENTATION = TimeSeries.COL_INDEX_NAMES
 
 def main():
     #data = fetch_data()
-    ts_static_data = pd.read_csv('data/ses_report.csv')
+    dataset = Dataset.get(dataset_name='Temp_data', dataset_project='ForeSightNEXT/BaltBest/resampled')
+    local_path = dataset.get_local_copy()
+    
+    ts_static_data = pd.read_csv(local_path + '/ses_report.csv')
     ts_static_data = ts_static_data[ts_static_data['overlap_season'] > 0]
     data_source = []
     ds = BaltBestAggregatedAPIData(
@@ -134,7 +137,7 @@ def main():
             "room_side_hca_temp"
         ],
         target = "hca_units",
-        local_copy='data/',
+        #local_copy='data/',
         static_data=ts_static_data,
         )
     data_source.append(ds)
