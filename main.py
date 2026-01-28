@@ -35,73 +35,94 @@ import logging
 OFFSET, TIME_STEP = TimeSeries.ROW_INDEX_NAMES
 FEATURE, REPRESENTATION = TimeSeries.COL_INDEX_NAMES
 
-@clover
-def main_for_reference(config_path:str = './configs/test_cfg.yaml'):
+# @clover
+# def main_for_reference(config_path:str = './configs/test_cfg.yaml'):
 
-    config = yaml.safe_load(open(config_path, 'r'))
-    print(config['Models'])
+#     config = yaml.safe_load(open(config_path, 'r'))
+#     print(config['Models'])
 
-    connect_config(Path(__file__).parent.joinpath(config_path))
-    dartstcn_config = config['Models'].get('DartsTCNModel').copy()
+#     connect_config(Path(__file__).parent.joinpath(config_path))
+#     dartstcn_config = config['Models'].get('DartsTCNModel').copy()
 
-    likelihood_name = dartstcn_config.get("likelihood")
-    likelihood = globals().get(likelihood_name) if likelihood_name else None
-    if likelihood:
-        dartstcn_config["likelihood"] = likelihood(dartstcn_config.get("quantiles", [0.1, 0.5, 0.9]))
+#     likelihood_name = dartstcn_config.get("likelihood")
+#     likelihood = globals().get(likelihood_name) if likelihood_name else None
+#     if likelihood:
+#         dartstcn_config["likelihood"] = likelihood(dartstcn_config.get("quantiles", [0.1, 0.5, 0.9]))
 
-    model_adapters = []
-    model_adapters.append(DartsTCNModel(**dartstcn_config))
+#     model_adapters = []
+#     model_adapters.append(DartsTCNModel(**dartstcn_config))
 
-    #kwargs = {**defaults,  **kwargs}
-    # args = clover_parser.parse_args()
+#     #kwargs = {**defaults,  **kwargs}
+#     # args = clover_parser.parse_args()
 
-    # print(vars(args))
+#     # print(vars(args))
     
-    data_sources = []
-    data_sources.append(BaltBestAggregatedAPIData())
-    roles = config['DataSources']['BaltBestAggregatedAPIData']['roles']
-    # roles = {
-    #   'TARGET': ['q_hca'],
-    #   'KNOWN': ['temperature_outdoor_avg'],
-    #   'OBSERVED': ['temperature_1_max', 'temperature_2_max','temperature_room_avg']
-    # }
+#     data_sources = []
+#     data_sources.append(BaltBestAggregatedAPIData())
+#     roles = config['DataSources']['BaltBestAggregatedAPIData']['roles']
+#     # roles = {
+#     #   'TARGET': ['q_hca'],
+#     #   'KNOWN': ['temperature_outdoor_avg'],
+#     #   'OBSERVED': ['temperature_1_max', 'temperature_2_max','temperature_room_avg']
+#     # }
 
-    metrics = [] 
-    axes1 = config['Metrics']['DimwiseAggregatedQuantileLoss']['axes']
-    axes2 = config['Metrics']['DimwiseAggregatedMetric']['axes']
+#     metrics = [] 
+#     axes1 = config['Metrics']['DimwiseAggregatedQuantileLoss']['axes']
+#     axes2 = config['Metrics']['DimwiseAggregatedMetric']['axes']
     
-    metrics.append(
-        DimwiseAggregatedQuantileLoss(axes=axes1)
-    )
-    metrics.append(
-        DimwiseAggregatedMetric(axes=axes2)
-    )
-    dp = DataProvider(data_sources=data_sources, roles=[roles])
-    #test_set = dp.get_test_set()
+#     metrics.append(
+#         DimwiseAggregatedQuantileLoss(axes=axes1)
+#     )
+#     metrics.append(
+#         DimwiseAggregatedMetric(axes=axes2)
+#     )
+#     dp = DataProvider(data_sources=data_sources, roles=[roles])
+#     #test_set = dp.get_test_set()
 
-    #args = kwargs
-    clearml_rep = ClearMLReporter(models=model_adapters, metrics=metrics)
+#     #args = kwargs
+#     clearml_rep = ClearMLReporter(models=model_adapters, metrics=metrics)
 
     
     
-    cml_pipe = ClearMLSingleTaskPipeline(
-        dp=dp,
-        model_adapter=model_adapters,
-        reporter=clearml_rep,
-        project_name='ForeSightNEXT/BaltBest',
-        task_name='DartsTCNModel_NoConfig',
-        #config_path="configs/pipeline.yaml",
-        init_args=[],
-        requirements="./requirements.txt",
-        docker = "dior00002/heating-forecast2:v1",
-        repo="git@github.com:dior01-dfki/heating-forecast.git",
-        branch="iss47"
-    )
-    cml_pipe.run()
+#     cml_pipe = ClearMLSingleTaskPipeline(
+#         dp=dp,
+#         model_adapter=model_adapters,
+#         reporter=clearml_rep,
+#         project_name='ForeSightNEXT/BaltBest',
+#         task_name='DartsTCNModel_NoConfig',
+#         #config_path="configs/pipeline.yaml",
+#         init_args=[],
+#         requirements="./requirements.txt",
+#         docker = "dior00002/heating-forecast2:v1",
+#         repo="git@github.com:dior01-dfki/heating-forecast.git",
+#         branch="iss47"
+#     )
+#     cml_pipe.run()
 
+# def cutoff(ts):
+#     start_ts = ts.static_data['start_ts']
+#     end_ts = ts.static_data['end_ts']
+#     overlap_len = ts.static_data['overlap_len']
+#     train = []
+#     val = []
+#     test = []
+#     for start,end in zip(start_ts, end_ts):
+#         start = pd.Timestamp(start).tz_localize(None)
+#         end   = pd.Timestamp(end).tz_localize(None)
+#         middle = start + (end - start) * 0.7
+#         print(ts.data.index)
+#         sub_ts = ts.get_time_slice(start, end)
+        
+#         if len(sub_ts) == 0:
+#             continue
+#         train.append(sub_ts[:middle])
+#         val.append(sub_ts[middle:end])
+#     return train, val, test
 
 def main():
     #data = fetch_data()
+    ts_static_data = pd.read_csv('data/ses_report.csv')
+    ts_static_data = ts_static_data[ts_static_data['overlap_season'] > 0]
     data_source = []
     ds = BaltBestAggregatedAPIData(
         group_col='room_id',
@@ -113,7 +134,8 @@ def main():
             "room_side_hca_temp"
         ],
         target = "hca_units",
-        #local_copy='data/'
+        local_copy='data/',
+        static_data=ts_static_data,
         )
     data_source.append(ds)
     roles = {
@@ -140,11 +162,15 @@ def main():
     )
     #model_adapters.append(DartsTCNModel(n_epochs=1, scaler_data=dp.get_train_set(), predict_likelihood_parameters=True))
     #model_adapters.append(dartsXGB())
+    kwargs = {'predict_likelihood_parameters': True}
     lrmodel = DartsLRModel(
         lags_past_covariates=24,
         lags_future_covariates=list(range(24)),
-        output_chunk_length=12,
+        output_chunk_length=24,
+        likelihood='quantile',
         quantiles=[0.1, 0.5, 0.9],
+        model_name="LR_baseline_model",
+        kwargs=kwargs,
     )
     model_adapters.append(lrmodel)
     # rep = LocalResultReporter(  models=model_adapters, metrics=metrics)
@@ -153,8 +179,17 @@ def main():
     #     model_adapter=model_adapters,
     #     reporter=rep,
     # )
-    # pipe.run()
-    
+    #pipe.run()
+    # train_set = dp.get_train_set()
+    # val_set = dp.get_val_set()
+    # test_set = dp.get_test_set()
+    #print(f"training a LR model")
+    # lrmodel.fit(train_set, val_set)
+    # print(f"predicting with LR model")
+    # #kwargs = {'predict_likelihood_parameters': True}
+    # kwargs = {}
+    # predictions = lrmodel.predict(data=test_set,n=12, **kwargs)
+    # print(len(predictions))
     clearml_rep = ClearMLReporter( models=model_adapters, metrics=metrics)
 
     

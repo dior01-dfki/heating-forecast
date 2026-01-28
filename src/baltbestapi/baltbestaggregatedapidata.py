@@ -38,12 +38,14 @@ class BaltBestAggregatedAPIData(BaltBestAPIData):
         static: Optional[Union[str, List[str]]] = None,
         url: str = "https://edc.baltbest.de/public",
         local_copy: Optional[str] = None,
+        static_data: Optional[pd.DataFrame] = None,
     ):
         super().__init__(
             url=url,
             local_copy=local_copy,
         )
         self.ts = []
+        self.ts_static_data = static_data
         self.link_dataset(
             dataset_project=BaltBestAggregatedAPIData.dataset_project,
             dataset_name=BaltBestAggregatedAPIData.dataset_name,
@@ -62,30 +64,30 @@ class BaltBestAggregatedAPIData(BaltBestAPIData):
         self.value_cols: List[str] = self._get_value_cols(
             'target', self.known, self.observed, self.static
         )
-        self.ts_dict = {}
+        #self.ts_dict = {}
 
     def get_data(self):
         super().get_data()
         return self.ts
 
-    @staticmethod
-    def room_subset():
+    # @staticmethod
+    # def room_subset():
 
-        metadata = Dataset.get(
-            dataset_project='ForeSightNEXT/BaltBest',
-            dataset_name='BaltBestMetadata',
-            dataset_version='0.0.2',)
-        data_qa_path = metadata.get_local_copy()
-        data_qa_report = pd.read_csv(f"{data_qa_path}/data_qa_report.csv", index_col=[0,1])
-        acceptable_rooms = (
-            data_qa_report
-            .groupby(level='room_id')
-            .apply(lambda g: ((g['non_nan_ratio'] >= 0.8) & (g['non_zero_ratio'] > 0.3)).all())
-        )
+    #     metadata = Dataset.get(
+    #         dataset_project='ForeSightNEXT/BaltBest',
+    #         dataset_name='BaltBestMetadata',
+    #         dataset_version='0.0.2',)
+    #     data_qa_path = metadata.get_local_copy()
+    #     data_qa_report = pd.read_csv(f"{data_qa_path}/data_qa_report.csv", index_col=[0,1])
+    #     acceptable_rooms = (
+    #         data_qa_report
+    #         .groupby(level='room_id')
+    #         .apply(lambda g: ((g['non_nan_ratio'] >= 0.8) & (g['non_zero_ratio'] > 0.3)).all())
+    #     )
 
-        # Get the list of room_ids that are True, empty if none
-        acceptable_room_ids = acceptable_rooms.index[acceptable_rooms].tolist()
-        return acceptable_room_ids
+    #     # Get the list of room_ids that are True, empty if none
+    #     acceptable_room_ids = acceptable_rooms.index[acceptable_rooms].tolist()
+    #     return acceptable_room_ids
 
     def _fetch_from_cache(self):
         """
@@ -136,7 +138,7 @@ class BaltBestAggregatedAPIData(BaltBestAPIData):
             .drop(columns=[self.group_col])
             .reset_index()
         )
-        self.ts, self.ts_dict = self._from_group_df(
+        self.ts = self._from_group_df(
             df=df,
             group_col=self.group_col,
             time_col=self.time_col,
@@ -165,14 +167,20 @@ class BaltBestAggregatedAPIData(BaltBestAPIData):
         value_cols: Optional[Union[List[str], str]] = None,
         freq: Optional[Union[str, int]] = "h",
         ts_type: Optional[str] = "determ",
+        group_id: Optional[Union[str, int]] = None,
+        
     ) -> TimeSeries:
         logger.info("Creating TimeSeries from DataFrame via class method.")
         logger.debug(f"Input DataFrame columns: {df.columns.tolist()}")
+        #df_copy = df.copy()
+        df.interpolate(method='linear', inplace=True)
         formatted = BaltBestAggregatedAPIData._build_internal_format(
-            df, time_col, value_cols, freq=freq, ts_type=ts_type
+            df, time_col, value_cols, freq=freq, ts_type=ts_type, 
         )
-
-        return TimeSeries(formatted, freq=freq)
+        static_dict = {}
+        if group_id is not None:
+            static_dict['room_id'] = group_id
+        return TimeSeries(formatted, freq=freq, static_data=static_dict)
 
     def _from_group_df(
         self,
@@ -225,17 +233,27 @@ class BaltBestAggregatedAPIData(BaltBestAPIData):
         # if value_cols is None:
         #         value_cols = df.columns[df.columns != time_col]
         unique_group = df[group_col].unique()
-        ts_dict = {}
+        #ts_dict = {}
         ts_list = []
         for i, group_id in enumerate(unique_group):
             df_group = df[df[group_col] == group_id]
-            ts_instance = BaltBestAggregatedAPIData.from_dataframe(
-                df_group, time_col, value_cols, freq, ts_type
-            )
-            # ts_dict[group_id] = ts_instance
-            ts_list.append(ts_instance)
-            ts_dict[i] = group_id
-        return ts_list, ts_dict
+            ts_static = self.ts_static_data[self.ts_static_data['room_id'] == group_id][['heating_year','overlap_start_ts', 'overlap_end_ts','overlap_len']]
+            for start, end in zip(ts_static['overlap_start_ts'], ts_static['overlap_end_ts']):
+                start = pd.Timestamp(start).tz_localize(None)
+                end   = pd.Timestamp(end).tz_localize(None)
+                df_group = df_group[(df_group[time_col] >= start) & (df_group[time_col] <= end)]
+                # print(f"Room {group_id} has data from {df_group[time_col].min()} to {df_group[time_col].max()}, start: {start}, end: {end}")
+                # print(df_group)
+                if df_group.empty:
+                    continue
+                #print(f"Room {group_id} has data from {df_group[time_col].min()} to {df_group[time_col].max()}, start: {start}, end: {end}, len: {len(df_group)}")
+                ts_instance = BaltBestAggregatedAPIData.from_dataframe(
+                    df_group, time_col, value_cols, freq, ts_type, group_id=group_id,
+                )
+                ts_list.append(ts_instance)
+            #ts_dict[i] = group_id
+        print(f"Total TimeSeries instances created: {len(ts_list)}")
+        return ts_list
 
     @staticmethod
     def _build_internal_format(
@@ -332,3 +350,10 @@ class BaltBestAggregatedAPIData(BaltBestAPIData):
 
     def _fetch_data_from_api(self):
         raise NotImplementedError("Subclasses must implement this method.")
+
+
+
+#[[2021-10:2021-11-11, 2022-11-11:2022-12-12],[2019-2023],[2020-2021],[2021-10:2021-11-11, 2022-11-11:2022-12-12]]
+#
+
+#[]
