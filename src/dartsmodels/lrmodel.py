@@ -20,6 +20,7 @@ class DartsLRModel(DartsModelAdapter):
                  *args, **kwargs,
                 ):
         super().__init__(*args, **kwargs)
+        self.quantiles = quantiles
         if model is not None:
             self.model = model
         else:

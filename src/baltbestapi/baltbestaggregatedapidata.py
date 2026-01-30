@@ -17,6 +17,9 @@ logger = logging.getLogger(__name__)
 
 class BaltBestAggregatedAPIData(BaltBestAPIData):
 
+    # dataset_project: str = "ForeSightNEXT/BaltBest/resampled"
+    # dataset_name: str = "AcceptableRooms"
+    # file_name: str = "acceptable_rooms.csv"
     dataset_project: str = "ForeSightNEXT/BaltBest/resampled"
     dataset_name: str = "ResampledData"
     file_name = 'resampled_data.csv'
@@ -37,6 +40,9 @@ class BaltBestAggregatedAPIData(BaltBestAPIData):
         url: str = "https://edc.baltbest.de/public",
         local_copy: Optional[str] = None,
         static_data: Optional[pd.DataFrame] = None,
+        dataset_project: Optional[str] = "ForeSightNEXT/BaltBest/resampled",
+        dataset_name: Optional[str] = "ResampledData",
+        file_name:Optional[str] = "resampled_data.csv"
     ):
         super().__init__(
             url=url,
@@ -56,12 +62,15 @@ class BaltBestAggregatedAPIData(BaltBestAPIData):
         self.known: Union[str, List[str]] = known
         self.observed: Union[str, List[str]] = observed
         self.static: Union[str, List[str]] = static
-        # self.value_cols: List[str] = self._get_value_cols(
-        #     self.target, self.known, self.observed, self.static
-        # )
+        self.dataset_name = dataset_name
+        self.dataset_project = dataset_project
+        self.file_name = file_name
         self.value_cols: List[str] = self._get_value_cols(
-            'target', self.known, self.observed, self.static
+            self.target, self.known, self.observed, self.static
         )
+        # self.value_cols: List[str] = self._get_value_cols(
+        #     'target', self.known, self.observed, self.static
+        # )
         #self.ts_dict = {}
 
     def get_data(self):
@@ -125,7 +134,7 @@ class BaltBestAggregatedAPIData(BaltBestAPIData):
 
         #Task.current_task().upload_artifact(name='acceptable_rooms', artifact_object=out_path)
         #HERE ALIGNING THE COLUMN NAMES with prediction
-        df.rename(columns={self.target:'target'},inplace=True)
+        #df.rename(columns={self.target:'target'},inplace=True)
         logger.debug(f"DataFrame columns after renaming: {df.columns.tolist()}")
         df[self.time_col] = pd.to_datetime(df[self.time_col]).dt.tz_localize(None)
         df = (
@@ -351,7 +360,4 @@ class BaltBestAggregatedAPIData(BaltBestAPIData):
 
 
 
-#[[2021-10:2021-11-11, 2022-11-11:2022-12-12],[2019-2023],[2020-2021],[2021-10:2021-11-11, 2022-11-11:2022-12-12]]
-#
 
-#[]
