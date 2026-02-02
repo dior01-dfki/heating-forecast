@@ -159,13 +159,13 @@ def main():
         branch="edz_train"
     )
     cml_pipe.run()
-    out_path = "model_artifacts/DartsTCNModel"
-    os.makedirs(out_path, exist_ok=True)
-    dartstcn.save(out_path)
-    Task.current_task().upload_artifact(
-    name="DartsTCNModel",
-    artifact_object=str(out_path),
-)
+    # out_path = "model_artifacts/DartsTCNModel"
+    # os.makedirs(out_path, exist_ok=True)
+    # dartstcn.save(out_path)
+    # Task.current_task().upload_artifact(
+    # name="DartsTCNModel",
+    # artifact_object=str(out_path),
+    #)
 if __name__ == "__main__":
     print("Starting main")
     main()
