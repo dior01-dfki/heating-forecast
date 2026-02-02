@@ -95,7 +95,7 @@ def main():
     metrics.append(
         DimwiseAggregatedMetric(axes=[OFFSET])
     )
-    print(dp.get_test_set())
+    #print(dp.get_test_set())
     metrics.append(
         DimwiseAggregatedQuantileLoss(axes=[OFFSET])
     )
