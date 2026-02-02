@@ -96,9 +96,9 @@ def main():
         DimwiseAggregatedMetric(axes=[OFFSET])
     )
     #print(dp.get_test_set())
-    metrics.append(
-        DimwiseAggregatedQuantileLoss(axes=[OFFSET])
-    )
+    # metrics.append(
+    #     DimwiseAggregatedQuantileLoss(axes=[OFFSET])
+    # )
     #model_adapters.append(DartsTCNModel(n_epochs=1, scaler_data=dp.get_train_set(), predict_likelihood_parameters=True))
     #model_adapters.append(dartsXGB())
     # kwargs = {'predict_likelihood_parameters': True}
