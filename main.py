@@ -158,7 +158,7 @@ def main():
         repo="git@github.com:dior01-dfki/heating-forecast.git",
         branch="edz_train"
     )
-    # cml_pipe.run()
+    cml_pipe.run()
 
 if __name__ == "__main__":
     print("Starting main")
