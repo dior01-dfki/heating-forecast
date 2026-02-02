@@ -37,7 +37,7 @@ class DartsTCNModel(DartsModelAdapter):
         optimizer_kwargs={"lr": 0.001},
         random_state=None,
         forecast_horizon=1,
-        predict_likelihood_parameters=False,
+        predict_likelihood_parameters=True,
         *args,
         **kwargs):
         """
@@ -111,6 +111,7 @@ class DartsTCNModel(DartsModelAdapter):
                 random_state=self.random_state,
                 likelihood=kwargs.get("likelihood", QuantileRegression(self.quantiles)),
                 pl_trainer_kwargs=trainer_kwargs,
+                
             )
         self.forecast_horizon = kwargs.get("forecast_horizon", 1)
         # self.scaler_target = Scaler()
@@ -171,50 +172,51 @@ class DartsTCNModel(DartsModelAdapter):
     #     observed = self.scaler_cov.fit_transform(observed)
     #     return target, known, observed, static
 
-    def predict(
-        self,
-        data: Union[AdapterInput, List[AdapterInput]],
-        n: Optional[int] = 1,
-        historical_forecast=True,
-        predict_likelihood_parameters=True,
-        forecast_horizon=5,
-    ) -> List[TimeSeries]:
-        """
-        Predict using the model and provided data.
-        """
+    # def predict(
+    #     self,
+    #     data: Union[AdapterInput, List[AdapterInput]],
+    #     n: Optional[int] = 1,
+    #     historical_forecast=True,
+    #     predict_likelihood_parameters=True,
+    #     forecast_horizon=5,
+    # ) -> List[TimeSeries]:
+    #     """
+    #     Predict using the model and provided data.
+    #     """
 
-        super().prepare_predict_args(data=data)
-        self._predict_args.update(
-            {"predict_likelihood_parameters": predict_likelihood_parameters}
-        )
-        if historical_forecast:
-            # If historical forecast is True, use the model's historical_forecast method
-            last_points_only = False
-            prediction = self.model.historical_forecasts(
-                **self._predict_args,
-                forecast_horizon=forecast_horizon,
-                last_points_only=last_points_only,
-                retrain=False,
-            )
-            prediction = self.scaler_target.inverse_transform(prediction)
-        else:
-            if n is not None:
-                self._predict_args["n"] = n
-            prediction = self.model.predict(**self._predict_args)
-            prediction = self.scaler_target.inverse_transform(prediction)
-        # self.isquantile = predict_likelihood_parameters
-        if isinstance(data, list):
-            # print(type(prediction[0][0]))
+    #     target, known, observed, static = self.convert_input(data)
+    #     self._prepare_predict_args(target, known, observed, static)
+    #     self._predict_args.update(
+    #         {"predict_likelihood_parameters": predict_likelihood_parameters}
+    #     )
+    #     if historical_forecast:
+    #         # If historical forecast is True, use the model's historical_forecast method
+    #         last_points_only = False
+    #         prediction = self.model.historical_forecasts(
+    #             **self._predict_args,
+    #             forecast_horizon=forecast_horizon,
+    #             last_points_only=last_points_only,
+    #             retrain=False,
+    #         )
+    #         prediction = self.scaler_target.inverse_transform(prediction)
+    #     else:
+    #         if n is not None:
+    #             self._predict_args["n"] = n
+    #         prediction = self.model.predict(**self._predict_args)
+    #         prediction = self.scaler_target.inverse_transform(prediction)
+    #     # self.isquantile = predict_likelihood_parameters
+    #     if isinstance(data, list):
+    #         # print(type(prediction[0][0]))
 
-            prediction_ts_format = [
-                DartsModelAdapter.to_time_series(ts=pred, quantiles=self.quantiles)
-                for pred in prediction
-            ]
-        else:
-            prediction_ts_format = DartsModelAdapter.to_time_series(
-                ts=prediction, quantiles=self.quantiles
-            )
-        return prediction_ts_format
+    #         prediction_ts_format = [
+    #             DartsModelAdapter.to_time_series(ts=pred, quantiles=self.quantiles)
+    #             for pred in prediction
+    #         ]
+    #     else:
+    #         prediction_ts_format = DartsModelAdapter.to_time_series(
+    #             ts=prediction, quantiles=self.quantiles
+    #         )
+    #     return prediction_ts_format
 
     def tune(
         self,

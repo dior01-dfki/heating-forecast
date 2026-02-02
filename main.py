@@ -29,8 +29,8 @@ from clover.decorator import connect_config
 import logging 
 
 from src.baltbestapi.baltdataprovider import BaltDataProvider
-# logging.basicConfig(level=logging.INFO)
-# logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 OFFSET, TIME_STEP = TimeSeries.ROW_INDEX_NAMES
 FEATURE, REPRESENTATION = TimeSeries.COL_INDEX_NAMES
@@ -85,7 +85,7 @@ def main():
     data_source.append(ds_test)
 
     #dp = DataProvider(data_sources=data_source, roles=[roles])
-    dp = BaltDataProvider(data_sources=data_source, roles = [roles,roles], data_purposes=[1,2])
+    dp = BaltDataProvider(data_sources=data_source, roles = [roles,roles], data_purposes=[1,2],splits=0.6)
     model_adapters = []
     #train_set = dp.get_train_set()
     #test_set = dp.get_test_set()
@@ -95,22 +95,35 @@ def main():
     metrics.append(
         DimwiseAggregatedMetric(axes=[OFFSET])
     )
-    # metrics.append(
-    #     DimwiseAggregatedQuantileLoss(axes=[OFFSET])
-    # )
+    print(dp.get_test_set())
+    metrics.append(
+        DimwiseAggregatedQuantileLoss(axes=[OFFSET])
+    )
     #model_adapters.append(DartsTCNModel(n_epochs=1, scaler_data=dp.get_train_set(), predict_likelihood_parameters=True))
     #model_adapters.append(dartsXGB())
-    kwargs = {'predict_likelihood_parameters': True}
-    lrmodel = DartsLRModel(
-        lags_past_covariates=24,
-        lags_future_covariates=list(range(24)),
-        output_chunk_length=24,
-        likelihood='quantile',
+    # kwargs = {'predict_likelihood_parameters': True}
+    # lrmodel = DartsLRModel(
+    #     lags_past_covariates=24,
+    #     lags_future_covariates=list(range(24)),
+    #     output_chunk_length=24,
+    #     likelihood='quantile',
+    #     quantiles=[0.1, 0.5, 0.9],
+    #     model_name="LR_baseline_model",
+    #     kwargs=kwargs,
+    # )
+    # model_adapters.append(lrmodel)
+    dartstcn = DartsTCNModel(
+        model_name="TCN_model",
+        input_chunk_length=48,
         quantiles=[0.1, 0.5, 0.9],
-        model_name="LR_baseline_model",
-        kwargs=kwargs,
+        output_chunk_length=24,
+        kernel_size=3,
+        num_filters=32,
+        predict_likelihood_parameters=True,
+        n_epochs=1
     )
-    model_adapters.append(lrmodel)
+    #print(f"DartsTCN.is_likelihood: {dartstcn.is_likelihood}")
+    model_adapters.append(dartstcn)
     # rep = LocalResultReporter(  models=model_adapters, metrics=metrics)
     # pipe = Pipeline(
     #     dp=dp,
@@ -145,7 +158,7 @@ def main():
         repo="git@github.com:dior01-dfki/heating-forecast.git",
         branch="edz_train"
     )
-    cml_pipe.run()
+    # cml_pipe.run()
 
 if __name__ == "__main__":
     print("Starting main")
