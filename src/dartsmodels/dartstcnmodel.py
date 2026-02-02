@@ -13,14 +13,17 @@ from forcateri.data.adapterinput import AdapterInput
 from forcateri.model.modelexceptions import InvalidModelTypeError, ModelAdapterError
 from forcateri.model.dartsmodeladapter import DartsModelAdapter
 from forcateri.data.timeseries import TimeSeries
-#from forcateri import project_root
+
+# from forcateri import project_root
 from clover import clover
 from src import project_root
+
 
 class DartsTCNModel(DartsModelAdapter):
 
     @clover
-    def __init__(        self,
+    def __init__(
+        self,
         model: Optional[TCNModel] = None,
         model_name: Optional[str] = None,
         quantiles=[0.1, 0.5, 0.9],
@@ -39,7 +42,8 @@ class DartsTCNModel(DartsModelAdapter):
         forecast_horizon=1,
         predict_likelihood_parameters=True,
         *args,
-        **kwargs):
+        **kwargs,
+    ):
         """
         Initializes the Darts TCNModel with specified parameters and scalers.
         Parameters
@@ -72,7 +76,7 @@ class DartsTCNModel(DartsModelAdapter):
             Scaler for the covariates.
         """
 
-        super().__init__(model_name=model_name,*args, **kwargs)
+        super().__init__(model_name=model_name, *args, **kwargs)
         self.quantiles = quantiles
         if model is not None:
             self.model = model
@@ -111,7 +115,6 @@ class DartsTCNModel(DartsModelAdapter):
                 random_state=self.random_state,
                 likelihood=kwargs.get("likelihood", QuantileRegression(self.quantiles)),
                 pl_trainer_kwargs=trainer_kwargs,
-                
             )
         self.forecast_horizon = kwargs.get("forecast_horizon", 1)
         # self.scaler_target = Scaler()
@@ -145,12 +148,22 @@ class DartsTCNModel(DartsModelAdapter):
         except ModelAdapterError as e:
             logging.error("Failed to fit a model, check the model params")
             raise ModelAdapterError(f"Failed to fit model: {e}")
-    def predict(        
-            data: List[AdapterInput],
-        n: Optional[int] = 12,
+
+    def predict(
+        self,
+        data: List[AdapterInput],
+        n: Optional[int] = 24,
         rolling_window: bool = True,
-        **kwargs,):
-        return super().predict(data=data, n=n, rolling_window=rolling_window, **kwargs)
+        **kwargs,
+    ):
+
+        return super().predict(
+            data=data,
+            n=n,
+            rolling_window=rolling_window,
+            **kwargs,
+        )
+
     # def convert_input(self, input: List[AdapterInput]) -> Tuple[
     #     List[DartsTimeSeries],
     #     List[DartsTimeSeries],
