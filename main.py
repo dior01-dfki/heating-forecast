@@ -120,7 +120,7 @@ def main():
         kernel_size=3,
         num_filters=32,
         predict_likelihood_parameters=True,
-        n_epochs=1
+        n_epochs=50
     )
     #print(f"DartsTCN.is_likelihood: {dartstcn.is_likelihood}")
     model_adapters.append(dartstcn)
