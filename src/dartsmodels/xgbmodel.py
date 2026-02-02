@@ -180,3 +180,18 @@ class dartsXGB(DartsModelAdapter):
                 fit_args[f"val_{key}"] = value
 
         self.model.fit(**fit_args)
+    
+    def predict(
+        self,
+        data: List[AdapterInput],
+        n: Optional[int] = 24,
+        rolling_window: bool = True,
+        **kwargs,
+    ):
+
+        return super().predict(
+            data=data,
+            n=n,
+            rolling_window=rolling_window,
+            **kwargs,
+        )
