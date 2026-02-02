@@ -162,7 +162,7 @@ def main():
         model_adapter=model_adapters,
         reporter=rep,
         project_name='ForeSightNEXT/BaltBest',
-        task_name='DartsTCN',
+        task_name='XGB training',
         #config_path="configs/pipeline.yaml",
         init_args=[],
         requirements="./requirements.txt",
