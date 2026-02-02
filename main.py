@@ -120,7 +120,7 @@ def main():
         kernel_size=3,
         num_filters=32,
         predict_likelihood_parameters=True,
-        n_epochs=50
+        n_epochs=5
     )
     #print(f"DartsTCN.is_likelihood: {dartstcn.is_likelihood}")
     model_adapters.append(dartstcn)
@@ -150,7 +150,7 @@ def main():
         model_adapter=model_adapters,
         reporter=clearml_rep,
         project_name='ForeSightNEXT/BaltBest',
-        task_name='LR baseline model test',
+        task_name='DartsTCN',
         #config_path="configs/pipeline.yaml",
         init_args=[],
         requirements="./requirements.txt",
