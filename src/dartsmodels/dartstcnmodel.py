@@ -145,7 +145,12 @@ class DartsTCNModel(DartsModelAdapter):
         except ModelAdapterError as e:
             logging.error("Failed to fit a model, check the model params")
             raise ModelAdapterError(f"Failed to fit model: {e}")
-
+    def predict(        
+            data: List[AdapterInput],
+        n: Optional[int] = 12,
+        rolling_window: bool = True,
+        **kwargs,):
+        return super().predict(data=data, n=n, rolling_window=rolling_window, **kwargs)
     # def convert_input(self, input: List[AdapterInput]) -> Tuple[
     #     List[DartsTimeSeries],
     #     List[DartsTimeSeries],
