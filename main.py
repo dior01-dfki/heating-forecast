@@ -29,8 +29,8 @@ import os
 import logging 
 
 from src.baltbestapi.baltdataprovider import BaltDataProvider
-logging.basicConfig(level=logging.DEBUG)
-logger = logging.getLogger(__name__)
+# logging.basicConfig(level=logging.DEBUG)
+# logger = logging.getLogger(__name__)
 
 OFFSET, TIME_STEP = TimeSeries.ROW_INDEX_NAMES
 FEATURE, REPRESENTATION = TimeSeries.COL_INDEX_NAMES
@@ -120,11 +120,11 @@ def main():
         kernel_size=3,
         num_filters=32,
         predict_likelihood_parameters=True,
-        n_epochs=5
+        n_epochs=1
     )
     #print(f"DartsTCN.is_likelihood: {dartstcn.is_likelihood}")
     model_adapters.append(dartstcn)
-    # rep = LocalResultReporter(  models=model_adapters, metrics=metrics)
+    rep = LocalResultReporter(  models=model_adapters, metrics=metrics)
     # pipe = Pipeline(
     #     dp=dp,
     #     model_adapter=model_adapters,
@@ -141,14 +141,14 @@ def main():
     # kwargs = {}
     # predictions = lrmodel.predict(data=test_set,n=12, **kwargs)
     # print(len(predictions))
-    clearml_rep = ClearMLReporter( models=model_adapters, metrics=metrics)
+    # clearml_rep = ClearMLReporter( models=model_adapters, metrics=metrics)
 
     
     
     cml_pipe = ClearMLSingleTaskPipeline(
         dp=dp,
         model_adapter=model_adapters,
-        reporter=clearml_rep,
+        reporter=rep,
         project_name='ForeSightNEXT/BaltBest',
         task_name='DartsTCN',
         #config_path="configs/pipeline.yaml",
