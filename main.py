@@ -112,30 +112,30 @@ def main():
     #     kwargs=kwargs,
     # )
     # model_adapters.append(lrmodel)
-    # dartstcn = DartsTCNModel(
-    #     model_name="TCN_model",
-    #     input_chunk_length=48,
-    #     quantiles=[0.1, 0.5, 0.9],
-    #     output_chunk_length=24,
-    #     kernel_size=3,
-    #     num_filters=32,
-    #     predict_likelihood_parameters=True,
-    #     n_epochs=10
-    # )
-    # #print(f"DartsTCN.is_likelihood: {dartstcn.is_likelihood}")
-    # model_adapters.append(dartstcn)
-    dartsXGB_model = dartsXGB(
-        model_name="XGB_model",
+    dartstcn = DartsTCNModel(
+        model_name="TCN_model",
         input_chunk_length=48,
+        quantiles=[0.1, 0.5, 0.9],
         output_chunk_length=24,
-        n_estimators=100,
-        learning_rate=0.1,
-        max_depth=6,
-        lags=24,
-        lags_past_covariates=24,
-        random_state=42
+        kernel_size=3,
+        num_filters=32,
+        predict_likelihood_parameters=True,
+        n_epochs=10
     )
-    model_adapters.append(dartsXGB_model)
+    #print(f"DartsTCN.is_likelihood: {dartstcn.is_likelihood}")
+    model_adapters.append(dartstcn)
+    # dartsXGB_model = dartsXGB(
+    #     model_name="XGB_model",
+    #     input_chunk_length=48,
+    #     output_chunk_length=24,
+    #     n_estimators=100,
+    #     learning_rate=0.1,
+    #     max_depth=6,
+    #     lags=24,
+    #     lags_past_covariates=24,
+    #     random_state=42
+    # )
+    # model_adapters.append(dartsXGB_model)
     #rep = LocalResultReporter(  models=model_adapters, metrics=metrics)
     # pipe = Pipeline(
     #     dp=dp,
