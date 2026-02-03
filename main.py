@@ -96,9 +96,9 @@ def main():
         DimwiseAggregatedMetric(axes=[OFFSET])
     )
     #print(dp.get_test_set())
-    # metrics.append(
-    #     DimwiseAggregatedQuantileLoss(axes=[OFFSET])
-    # )
+    metrics.append(
+        DimwiseAggregatedQuantileLoss(axes=[OFFSET])
+    )
     #model_adapters.append(DartsTCNModel(n_epochs=1, scaler_data=dp.get_train_set(), predict_likelihood_parameters=True))
     #model_adapters.append(dartsXGB())
     # kwargs = {'predict_likelihood_parameters': True}
@@ -112,18 +112,18 @@ def main():
     #     kwargs=kwargs,
     # )
     # model_adapters.append(lrmodel)
-    # dartstcn = DartsTCNModel(
-    #     model_name="TCN_model",
-    #     input_chunk_length=48,
-    #     quantiles=[0.1, 0.5, 0.9],
-    #     output_chunk_length=24,
-    #     kernel_size=3,
-    #     num_filters=32,
-    #     predict_likelihood_parameters=True,
-    #     n_epochs=1
-    # )
-    # #print(f"DartsTCN.is_likelihood: {dartstcn.is_likelihood}")
-    # model_adapters.append(dartstcn)
+    dartstcn = DartsTCNModel(
+        model_name="TCN_model",
+        input_chunk_length=48,
+        quantiles=[0.1, 0.5, 0.9],
+        output_chunk_length=24,
+        kernel_size=3,
+        num_filters=32,
+        predict_likelihood_parameters=True,
+        n_epochs=1
+    )
+    #print(f"DartsTCN.is_likelihood: {dartstcn.is_likelihood}")
+    model_adapters.append(dartstcn)
     dartsXGB_model = dartsXGB(
         model_name="XGB_model",
         input_chunk_length=48,
@@ -136,7 +136,7 @@ def main():
         random_state=42
     )
     model_adapters.append(dartsXGB_model)
-    rep = LocalResultReporter(  models=model_adapters, metrics=metrics)
+    #rep = LocalResultReporter(  models=model_adapters, metrics=metrics)
     # pipe = Pipeline(
     #     dp=dp,
     #     model_adapter=model_adapters,
@@ -153,14 +153,14 @@ def main():
     # kwargs = {}
     # predictions = lrmodel.predict(data=test_set,n=12, **kwargs)
     # print(len(predictions))
-    # clearml_rep = ClearMLReporter( models=model_adapters, metrics=metrics)
+    clearml_rep = ClearMLReporter( models=model_adapters, metrics=metrics)
 
     
     
     cml_pipe = ClearMLSingleTaskPipeline(
         dp=dp,
         model_adapter=model_adapters,
-        reporter=rep,
+        reporter=clearml_rep,
         project_name='ForeSightNEXT/BaltBest',
         task_name='XGB training',
         #config_path="configs/pipeline.yaml",
