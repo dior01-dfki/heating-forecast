@@ -101,29 +101,29 @@ def main():
     # )
     #model_adapters.append(DartsTCNModel(n_epochs=1, scaler_data=dp.get_train_set(), predict_likelihood_parameters=True))
     #model_adapters.append(dartsXGB())
-    # kwargs = {'predict_likelihood_parameters': True}
-    # lrmodel = DartsLRModel(
-    #     lags_past_covariates=24,
-    #     lags_future_covariates=list(range(24)),
-    #     output_chunk_length=24,
-    #     likelihood='quantile',
-    #     quantiles=[0.1, 0.5, 0.9],
-    #     model_name="LR_baseline_model",
-    #     kwargs=kwargs,
-    # )
-    # model_adapters.append(lrmodel)
-    dartstcn = DartsTCNModel(
-        model_name="TCN_model",
-        input_chunk_length=48,
-        quantiles=[0.1, 0.5, 0.9],
+    kwargs = {'predict_likelihood_parameters': True}
+    lrmodel = DartsLRModel(
+        lags_past_covariates=24,
+        lags_future_covariates=list(range(24)),
         output_chunk_length=24,
-        kernel_size=3,
-        num_filters=32,
-        predict_likelihood_parameters=True,
-        n_epochs=10
+        likelihood='quantile',
+        quantiles=[0.1, 0.5, 0.9],
+        model_name="LR_baseline_model",
+        kwargs=kwargs,
     )
-    #print(f"DartsTCN.is_likelihood: {dartstcn.is_likelihood}")
-    model_adapters.append(dartstcn)
+    model_adapters.append(lrmodel)
+    # dartstcn = DartsTCNModel(
+    #     model_name="TCN_model",
+    #     input_chunk_length=48,
+    #     quantiles=[0.1, 0.5, 0.9],
+    #     output_chunk_length=24,
+    #     kernel_size=3,
+    #     num_filters=32,
+    #     predict_likelihood_parameters=True,
+    #     n_epochs=5
+    # )
+    # #print(f"DartsTCN.is_likelihood: {dartstcn.is_likelihood}")
+    # model_adapters.append(dartstcn)
     # dartsXGB_model = dartsXGB(
     #     model_name="XGB_model",
     #     input_chunk_length=48,
