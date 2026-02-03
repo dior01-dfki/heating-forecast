@@ -96,9 +96,9 @@ def main():
         DimwiseAggregatedMetric(axes=[OFFSET])
     )
     #print(dp.get_test_set())
-    metrics.append(
-        DimwiseAggregatedQuantileLoss(axes=[OFFSET])
-    )
+    # metrics.append(
+    #     DimwiseAggregatedQuantileLoss(axes=[OFFSET])
+    # )
     #model_adapters.append(DartsTCNModel(n_epochs=1, scaler_data=dp.get_train_set(), predict_likelihood_parameters=True))
     #model_adapters.append(dartsXGB())
     # kwargs = {'predict_likelihood_parameters': True}
@@ -120,22 +120,22 @@ def main():
         kernel_size=3,
         num_filters=32,
         predict_likelihood_parameters=True,
-        n_epochs=1
+        n_epochs=10
     )
     #print(f"DartsTCN.is_likelihood: {dartstcn.is_likelihood}")
     model_adapters.append(dartstcn)
-    dartsXGB_model = dartsXGB(
-        model_name="XGB_model",
-        input_chunk_length=48,
-        output_chunk_length=24,
-        n_estimators=100,
-        learning_rate=0.1,
-        max_depth=6,
-        lags=24,
-        lags_past_covariates=24,
-        random_state=42
-    )
-    model_adapters.append(dartsXGB_model)
+    # dartsXGB_model = dartsXGB(
+    #     model_name="XGB_model",
+    #     input_chunk_length=48,
+    #     output_chunk_length=24,
+    #     n_estimators=100,
+    #     learning_rate=0.1,
+    #     max_depth=6,
+    #     lags=24,
+    #     lags_past_covariates=24,
+    #     random_state=42
+    # )
+    # model_adapters.append(dartsXGB_model)
     #rep = LocalResultReporter(  models=model_adapters, metrics=metrics)
     # pipe = Pipeline(
     #     dp=dp,
@@ -162,7 +162,7 @@ def main():
         model_adapter=model_adapters,
         reporter=clearml_rep,
         project_name='ForeSightNEXT/BaltBest',
-        task_name='XGB training',
+        task_name='DartsTCN training',
         #config_path="configs/pipeline.yaml",
         init_args=[],
         requirements="./requirements.txt",
