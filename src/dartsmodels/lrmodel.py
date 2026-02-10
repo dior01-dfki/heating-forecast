@@ -38,7 +38,7 @@ class DartsLRModel(DartsModelAdapter):
     def fit(self, train_data, val_data):
         super().fit(train_data, val_data)
 
-    def predict(self,data, n: int=12, rolling_window=True, *args, **kwargs):
+    def predict(self,data, n: int=24, rolling_window=True, *args, **kwargs):
         #return self.model.predict(n, predict_likelihood_parameters=predict_likelihood_parameters, *args, **kwargs)
         print(f"predict_likelihood_parametrs:{self.is_likelihood}")
         return super().predict(n=n, data=data, rolling_window=rolling_window, *args, **kwargs)

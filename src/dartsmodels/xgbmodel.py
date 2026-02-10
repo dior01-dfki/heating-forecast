@@ -9,6 +9,7 @@ import pandas as pd
 import pickle
 from darts import TimeSeries as DartsTimeSeries
 from forcateri.data.timeseries import TimeSeries
+from forcateri.model.modelexceptions import ModelAdapterError
 from clover import clover
 
 
@@ -121,77 +122,42 @@ class dartsXGB(DartsModelAdapter):
     def fit(
         self,
         train_data: List[AdapterInput],
-        val_data: Optional[List[AdapterInput]] = None,
-    ) -> None:
+        val_data: Optional[List[AdapterInput]],
+    ):
         """
-        Fits the Darts forecasting model using the provided training and validation data.
+        Fits the model using the provided training and validation data.
 
-        This method converts the input data to Darts format, prepares the training arguments
-        including any supported covariates (future, past, or static), and optionally includes
-        validation data with the appropriate prefixes. The model is then fitted using these
-        prepared arguments.
+        Parameters:
+            train_data (List[AdapterInput]): The training data to be used for fitting the model.
+            val_data (Optional[List[AdapterInput]]): The validation data to be used for evaluating the model during training.
+                This parameter is optional and can be None.
+            **kwargs: Additional keyword arguments to be passed to the parent class's fit method.
 
-        Parameters
-        ----------
-        train_data : List[AdapterInput]
-            A list of AdapterInput objects containing the training data, including target
-            series and any available covariates (known/future, observed/past, and static).
-        val_data : Optional[List[AdapterInput]], default=None
-            An optional list of AdapterInput objects containing validation data. If provided,
-            validation series and covariates will be passed to the model's fit method with
-            'val_' prefixes.
+        Raises:
+            ModelAdapterError: If the model fitting process fails due to invalid parameters or other issues.
 
-        Returns
-        -------
-        None
-            This method modifies the model in-place and does not return a value.
-
-        Notes
-        -----
-        - The method automatically handles covariate support detection based on the model's
-          capabilities (supports_future_covariates, supports_past_covariates, etc.).
-        - Target column names are stored in self.target_col_names for later use in predictions.
-        - If scalers are configured, they will be applied during the convert_input step.
-        - Validation covariates are automatically prefixed with 'val_' to match Darts API
-          requirements.
+        Logs:
+            An error message is logged if the model fitting process fails.
         """
 
-        target, known, observed, static = self.convert_input(train_data)
         try:
-            self.target_col_names = [t.components[0] for t in target]
-        except Exception as e:
-            print(f"Error extracting target column names: {e}")
-            # self.target_col_names = [t[0].components[0] for t in train_data]
 
-        fit_args = {"series": target}
-        fit_args.update(self._get_covariate_args(known, observed, static))
+            super().fit(train_data=train_data, val_data=val_data)
 
-        if val_data is not None:
-            val_target, val_known, val_observed, val_static = self.convert_input(
-                val_data
-            )
-
-            fit_args["val_series"] = val_target
-            val_covariate_args = self._get_covariate_args(
-                val_known, val_observed, val_static
-            )
-            # Prefix validation covariate keys with 'val_'
-            for key, value in val_covariate_args.items():
-                fit_args[f"val_{key}"] = value
-
-        self.model.fit(**fit_args)
+        except ModelAdapterError as e:
+            #logging.error("Failed to fit a model, check the model params")
+            raise ValueError(f"Failed to fit model: {e}")
     
     def predict(
         self,
         data: List[AdapterInput],
         n: Optional[int] = 24,
-        rolling_window: bool = True,
-        **kwargs,
+        use_rolling_window: bool = True,
     ):
 
         return super().predict(
             data=data,
             n=n,
-            rolling_window=rolling_window,
-            **kwargs,
+            use_rolling_window=use_rolling_window,
+        
         )

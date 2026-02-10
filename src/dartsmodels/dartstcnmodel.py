@@ -40,9 +40,7 @@ class DartsTCNModel(DartsModelAdapter):
         optimizer_kwargs={"lr": 0.001},
         random_state=None,
         forecast_horizon=1,
-        predict_likelihood_parameters=True,
-        *args,
-        **kwargs,
+        is_likelihood=True,
     ):
         """
         Initializes the Darts TCNModel with specified parameters and scalers.
@@ -76,7 +74,7 @@ class DartsTCNModel(DartsModelAdapter):
             Scaler for the covariates.
         """
 
-        super().__init__(model_name=model_name, *args, **kwargs)
+        super().__init__(model_name=model_name, quantiles=quantiles,is_likelihood=is_likelihood)
         self.quantiles = quantiles
         if model is not None:
             self.model = model
@@ -94,7 +92,7 @@ class DartsTCNModel(DartsModelAdapter):
             self.optimizer_kwargs = optimizer_kwargs
             self.random_state = random_state
             self.forecast_horizon = forecast_horizon
-            self.is_likelihood = predict_likelihood_parameters
+            self.is_likelihood = is_likelihood
             log_dir = project_root.joinpath(
                 f"logs/dartstcn/{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}"
             )
@@ -113,10 +111,10 @@ class DartsTCNModel(DartsModelAdapter):
                 batch_size=self.batch_size,
                 optimizer_kwargs=self.optimizer_kwargs,
                 random_state=self.random_state,
-                likelihood=kwargs.get("likelihood", QuantileRegression(self.quantiles)),
+                likelihood=QuantileRegression(self.quantiles) if self.is_likelihood else None,
                 pl_trainer_kwargs=trainer_kwargs,
             )
-        self.forecast_horizon = kwargs.get("forecast_horizon", 1)
+        self.forecast_horizon = 24
         # self.scaler_target = Scaler()
         # self.scaler_cov = Scaler()
 
@@ -153,15 +151,15 @@ class DartsTCNModel(DartsModelAdapter):
         self,
         data: List[AdapterInput],
         n: Optional[int] = 24,
-        rolling_window: bool = True,
-        **kwargs,
+        use_rolling_window: bool = True,
+        #**kwargs,
     ):
 
         return super().predict(
             data=data,
             n=n,
-            rolling_window=rolling_window,
-            **kwargs,
+            use_rolling_window=use_rolling_window,
+            #**kwargs,
         )
 
     # def convert_input(self, input: List[AdapterInput]) -> Tuple[
