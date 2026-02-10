@@ -101,17 +101,17 @@ def main():
     # )
     #model_adapters.append(DartsTCNModel(n_epochs=1, scaler_data=dp.get_train_set(), predict_likelihood_parameters=True))
     #model_adapters.append(dartsXGB())
-    kwargs = {'predict_likelihood_parameters': True}
-    lrmodel = DartsLRModel(
-        lags_past_covariates=24,
-        lags_future_covariates=list(range(24)),
-        output_chunk_length=24,
-        likelihood='quantile',
-        quantiles=[0.1, 0.5, 0.9],
-        model_name="LR_baseline_model",
-        kwargs=kwargs,
-    )
-    model_adapters.append(lrmodel)
+    # kwargs = {'predict_likelihood_parameters': True}
+    # lrmodel = DartsLRModel(
+    #     lags_past_covariates=24,
+    #     lags_future_covariates=list(range(24)),
+    #     output_chunk_length=24,
+    #     likelihood='quantile',
+    #     quantiles=[0.1, 0.5, 0.9],
+    #     model_name="LR_baseline_model",
+    #     kwargs=kwargs,
+    # )
+    # model_adapters.append(lrmodel)
     # dartstcn = DartsTCNModel(
     #     model_name="TCN_model",
     #     input_chunk_length=48,
@@ -124,18 +124,18 @@ def main():
     # )
     # #print(f"DartsTCN.is_likelihood: {dartstcn.is_likelihood}")
     # model_adapters.append(dartstcn)
-    # dartsXGB_model = dartsXGB(
-    #     model_name="XGB_model",
-    #     input_chunk_length=48,
-    #     output_chunk_length=24,
-    #     n_estimators=100,
-    #     learning_rate=0.1,
-    #     max_depth=6,
-    #     lags=24,
-    #     lags_past_covariates=24,
-    #     random_state=42
-    # )
-    # model_adapters.append(dartsXGB_model)
+    dartsXGB_model = dartsXGB(
+        model_name="XGB_model",
+        input_chunk_length=48,
+        output_chunk_length=24,
+        n_estimators=100,
+        learning_rate=0.1,
+        max_depth=6,
+        lags=24,
+        lags_past_covariates=24,
+        random_state=42
+    )
+    model_adapters.append(dartsXGB_model)
     #rep = LocalResultReporter(  models=model_adapters, metrics=metrics)
     # pipe = Pipeline(
     #     dp=dp,
@@ -158,7 +158,7 @@ def main():
     
     
     cml_pipe = ClearMLSingleTaskPipeline(
-        dp=dp,
+        data_provider=dp,
         model_adapter=model_adapters,
         reporter=clearml_rep,
         project_name='ForeSightNEXT/BaltBest',
