@@ -166,7 +166,7 @@ def main():
         #config_path="configs/pipeline.yaml",
         init_args=[],
         requirements="./requirements.txt",
-        docker = "dior00002/heating-forecast2:v1",
+        #docker = "dior00002/heating-forecast2:v1",
         repo="git@github.com:dior01-dfki/heating-forecast.git",
         branch="edz_train"
     )
