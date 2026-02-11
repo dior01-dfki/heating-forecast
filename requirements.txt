@@ -136,7 +136,7 @@ python-dotenv==1.0.1
 python-json-logger==2.0.7
 pytorch-lightning==2.4.0
 pytz==2024.1
-PyYAML==6.0.1
+PyYAML==6.0.3
 pyzmq==26.0.3
 qtconsole==5.5.2
 QtPy==2.4.1
@@ -188,6 +188,7 @@ widgetsnbextension==4.0.11
 xarray==2024.9.0
 xgboost>=2.1.2
 yarl==1.12.1
-forcateri==0.5.8 @ git+https://github.com/connected-intelligent-systems/forcateri.git@ticket86
+forcateri @ git+https://github.com/connected-intelligent-systems/forcateri.git@ticket96
+
 
 
