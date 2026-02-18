@@ -167,7 +167,7 @@ def main():
         init_args=[],
         requirements="./requirements.txt",
         #docker = "dior00002/heating-forecast2:v1",
-        docker = "nvidia/cuopt:latest-cuda12.8-py312",
+        docker = "python:3.12-slim",
         #docker = "unit8/darts",
         repo="git@github.com:dior01-dfki/heating-forecast.git",
         branch="edz_train"
