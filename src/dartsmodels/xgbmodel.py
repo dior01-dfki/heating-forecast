@@ -29,7 +29,7 @@ class dartsXGB(DartsModelAdapter):
                  lags_past_covariates: int = 7,
                  *args, 
                  **kwargs):
-        super().__init__(*args, **kwargs)
+        super().__init__(name=model_name,*args,**kwargs)
         if model is not None:
             self.model = model
         else:

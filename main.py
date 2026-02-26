@@ -14,7 +14,7 @@ from forcateri.data.dataprovider import DataProvider
 from forcateri.reporting.clearmlreporter import ClearMLReporter
 from forcateri.reporting.localresultreporter import LocalResultReporter
 from forcateri.controls.clearmlsingletaskpipeline import ClearMLSingleTaskPipeline, Pipeline
-
+from forcateri.reporting.metric_aggregations import column_wise_mae, column_wise_mape
 #from forcateri.utils.decorators import clover, connect_config, global_cfg_dct, clover_parser
 from pathlib import Path
 #from forcateri.utils.config_utils import extract_config
@@ -93,7 +93,10 @@ def main():
     #print(f"Test set: {test_set}")
     metrics = []
     metrics.append(
-        DimwiseAggregatedMetric(axes=[OFFSET])
+        DimwiseAggregatedMetric(axes=[OFFSET], metric_func=column_wise_mae)
+    )
+    metrics.append(
+        DimwiseAggregatedMetric(axes=[OFFSET], metric_func=column_wise_mape)
     )
     #print(dp.get_test_set())
     # metrics.append(
