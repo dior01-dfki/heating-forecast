@@ -163,7 +163,7 @@ def main():
     cml_pipe = ClearMLSingleTaskPipeline(
         data_provider=dp,
         model_adapter=model_adapters,
-        reporter=clearml_rep,
+        result_reporter=clearml_rep,
         project_name='ForeSightNEXT/BaltBest',
         task_name=f'{model_adapters[0].model_name} training',
         #config_path="configs/pipeline.yaml",
