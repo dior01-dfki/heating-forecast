@@ -93,10 +93,10 @@ def main():
     #print(f"Test set: {test_set}")
     metrics = []
     metrics.append(
-        DimwiseAggregatedMetric(axes=[OFFSET], reduction=column_wise_mae)
+        DimwiseAggregatedMetric(axes=[TIME_STEP], reduction=column_wise_mae)
     )
     metrics.append(
-        DimwiseAggregatedMetric(axes=[OFFSET], reduction=column_wise_mape)
+        DimwiseAggregatedMetric(axes=[TIME_STEP], reduction=column_wise_mape)
     )
     #print(dp.get_test_set())
     # metrics.append(
