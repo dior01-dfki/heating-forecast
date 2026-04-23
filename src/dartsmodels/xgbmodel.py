@@ -27,6 +27,7 @@ class dartsXGB(DartsModelAdapter):
                  random_state: Optional[int] = None,
                  lags: int = 7,
                  lags_past_covariates: int = 7,
+                 add_encoders: Optional[dict] = None,
                  *args, 
                  **kwargs):
         super().__init__(name=model_name,*args,**kwargs)
@@ -42,6 +43,7 @@ class dartsXGB(DartsModelAdapter):
                 random_state=random_state,
                 lags=lags,
                 lags_past_covariates=lags_past_covariates,
+                add_encoders=add_encoders
             )
             self.model_name = model_name if model_name else "dartsXGB"
 
