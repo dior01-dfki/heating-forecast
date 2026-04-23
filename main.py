@@ -1,4 +1,5 @@
 
+from forcateri.model.dartsmodeladapter import Scaler
 from forcateri.reporting.dimwiseaggregatedmetric import DimwiseAggregatedMetric
 from forcateri.reporting.dimwiseaggregatedquantileloss import (
     DimwiseAggregatedQuantileLoss,
@@ -150,6 +151,23 @@ def main():
         lags_past_covariates=24,
         random_state=42
     )
+    dartsXGB_model = dartsXGB(
+        model_name="XGB_model_2",
+        input_chunk_length=168,
+        output_chunk_length=24,
+        n_estimators=100,
+        learning_rate=0.1,
+        max_depth=6,
+        lags=24,
+        lags_past_covariates=24,
+        random_state=42,
+        # --- Add encoders here ---
+        add_encoders={
+            'cyclic': {'future': ['hour', 'dayofweek']},
+            'datetime_attribute': {'future': ['month']},
+            'transformer': Scaler() # Recommended to keep features in a similar range
+        }
+)
     model_adapters.append(dartsXGB_model)
     #rep = LocalResultReporter(  models=model_adapters, metrics=metrics)
     # pipe = Pipeline(
@@ -178,12 +196,9 @@ def main():
         result_reporter=clearml_rep,
         project_name='ForeSightNEXT/BaltBest',
         task_name=f'{model_adapters[0].model_name} training',
-        #config_path="configs/pipeline.yaml",
         init_args=[],
         requirements="./requirements.txt",
-        #docker = "dior00002/heating-forecast2:v1",
         docker = "python:3.12-slim",
-        #docker = "unit8/darts",
         repo="git@github.com:dior01-dfki/heating-forecast.git",
         branch="edz_train"
     )
