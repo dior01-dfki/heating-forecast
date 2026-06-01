@@ -41,7 +41,7 @@ class DartsTCNModel(DartsModelAdapter):
         random_state=None,
         forecast_horizon=1,
         is_likelihood=True,
-        add_encoders=add_encoders
+        add_encoders=None
     ):
         """
         Initializes the Darts TCNModel with specified parameters and scalers.
