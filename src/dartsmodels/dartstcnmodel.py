@@ -41,6 +41,7 @@ class DartsTCNModel(DartsModelAdapter):
         random_state=None,
         forecast_horizon=1,
         is_likelihood=True,
+        add_encoders=add_encoders
     ):
         """
         Initializes the Darts TCNModel with specified parameters and scalers.
@@ -93,6 +94,7 @@ class DartsTCNModel(DartsModelAdapter):
             self.random_state = random_state
             self.forecast_horizon = forecast_horizon
             self.is_likelihood = is_likelihood
+            self.add_encoders = add_encoders
             log_dir = project_root.joinpath(
                 f"logs/dartstcn/{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}"
             )
@@ -113,6 +115,7 @@ class DartsTCNModel(DartsModelAdapter):
                 random_state=self.random_state,
                 likelihood=QuantileRegression(self.quantiles) if self.is_likelihood else None,
                 pl_trainer_kwargs=trainer_kwargs,
+                add_encoders=add_encoders
             )
         self.forecast_horizon = 24
         # self.scaler_target = Scaler()

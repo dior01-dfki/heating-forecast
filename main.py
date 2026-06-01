@@ -6,7 +6,7 @@ from forcateri.reporting.dimwiseaggregatedquantileloss import (
 )
 from forcateri.data.timeseries import TimeSeries
 import pandas as pd
-
+from src.dartsmodels.dartstftmodel import DartsTFTModel
 from src.baltbestapi.baltbestaggregatedapidata import BaltBestAggregatedAPIData
 from src.dartsmodels.dartstcnmodel import DartsTCNModel
 from src.dartsmodels.xgbmodel import dartsXGB
@@ -128,47 +128,71 @@ def main():
     #     kwargs=kwargs,
     # )
     # model_adapters.append(lrmodel)
-    # dartstcn = DartsTCNModel(
-    #     model_name="TCN_model",
-    #     input_chunk_length=48,
-    #     quantiles=[0.1, 0.5, 0.9],
-    #     output_chunk_length=24,
-    #     kernel_size=3,
-    #     num_filters=32,
-    #     predict_likelihood_parameters=True,
-    #     n_epochs=5
-    # )
-    # #print(f"DartsTCN.is_likelihood: {dartstcn.is_likelihood}")
-    # model_adapters.append(dartstcn)
-    dartsXGB_model = dartsXGB(
-        model_name="XGB_model",
+    def encode_year(idx):
+        return (idx.year - 1950) / 50
+
+    add_encoders={
+        'cyclic': {'future': ['month']},
+        'datetime_attribute': {'future': ['hour', 'dayofweek']},
+        'position': {'past': ['relative'], 'future': ['relative']},
+        'custom': {'past': [encode_year]},
+        'transformer': Scaler(),
+        'tz': 'CET'
+    }
+    dartstcn = DartsTCNModel(
+        model_name="TCN_model",
         input_chunk_length=48,
+        quantiles=[0.1, 0.5, 0.9],
         output_chunk_length=24,
-        n_estimators=100,
-        learning_rate=0.1,
-        max_depth=6,
-        lags=24,
-        lags_past_covariates=24,
-        random_state=42
+        kernel_size=3,
+        num_filters=32,
+        predict_likelihood_parameters=True,
+        n_epochs=5
     )
-    dartsXGB_model = dartsXGB(
-        model_name="XGB_model_2",
-        input_chunk_length=168,
+    model_adapters.append(dartstcn)
+    # #print(f"DartsTCN.is_likelihood: {dartstcn.is_likelihood}")
+
+    dartstft = DartsTFTModel(
+        model_name="TFT_Model",
+        input_chunk_length=48,
+        quantiles=[0.1, 0.5, 0.9],
         output_chunk_length=24,
-        n_estimators=100,
-        learning_rate=0.1,
-        max_depth=6,
-        lags=24,
-        lags_past_covariates=24,
-        random_state=42,
-        # --- Add encoders here ---
-        add_encoders={
-            'cyclic': {'future': ['hour', 'dayofweek']},
-            'datetime_attribute': {'future': ['month']},
-            'transformer': Scaler() # Recommended to keep features in a similar range
-        }
-)
-    model_adapters.append(dartsXGB_model)
+        is_likelihood=True,
+        n_epochs=5,
+        add_encoders=add_encoders
+    )
+    model_adapters.append(dartstft)
+    # model_adapters.append(dartstcn)
+#     dartsXGB_model = dartsXGB(
+#         model_name="XGB_model",
+#         input_chunk_length=48,
+#         output_chunk_length=24,
+#         n_estimators=100,
+#         learning_rate=0.1,
+#         max_depth=6,
+#         lags=24,
+#         lags_past_covariates=24,
+#         random_state=42
+#     )
+#     dartsXGB_model_2 = dartsXGB(
+#         model_name="XGB_model_2",
+#         input_chunk_length=168,
+#         output_chunk_length=48,
+#         n_estimators=100,
+#         learning_rate=0.1,
+#         max_depth=6,
+#         lags=48,
+#         lags_past_covariates=48,
+#         random_state=55,
+#         # --- Add encoders here ---
+#         add_encoders={
+#             'cyclic': {'future': ['hour', 'dayofweek']},
+#             'datetime_attribute': {'future': ['month']},
+#             'transformer': Scaler() # Recommended to keep features in a similar range
+#         }
+# )
+#     model_adapters.append(dartsXGB_model)
+#     model_adapters.append(dartsXGB_model_2)
     #rep = LocalResultReporter(  models=model_adapters, metrics=metrics)
     # pipe = Pipeline(
     #     dp=dp,

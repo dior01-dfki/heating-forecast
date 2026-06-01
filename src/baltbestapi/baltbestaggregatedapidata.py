@@ -187,7 +187,9 @@ class BaltBestAggregatedAPIData(BaltBestAPIData):
         static_dict = {}
         if group_id is not None:
             static_dict['room_id'] = group_id
-        return TimeSeries(formatted, freq=freq, static_data=static_dict)
+        print(f"formatted df: {formatted.head()}")
+        return TimeSeries(formatted, freq=freq)
+        #return TimeSeries(formatted, freq=freq, static_data=static_dict)
 
     def _from_group_df(
         self,
@@ -260,7 +262,7 @@ class BaltBestAggregatedAPIData(BaltBestAPIData):
                 ts_list.append(ts_instance)
             #ts_dict[i] = group_id
         print(f"Total TimeSeries instances created: {len(ts_list)}")
-        return ts_list
+        return ts_list[:-1]
 
     @staticmethod
     def _build_internal_format(

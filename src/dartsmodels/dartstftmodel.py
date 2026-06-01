@@ -20,72 +20,104 @@ from forcateri.data.timeseries import TimeSeries
 
 class DartsTFTModel(DartsModelAdapter):
 
-    def __init__(self, model: Optional[TFTModel] = None, *args, **kwargs):
+    def __init__(
+        self,
+        model: Optional[TFTModel] = None,
+        model_name: Optional[str] = None,
+        quantiles=[0.1, 0.5, 0.9],
+        input_chunk_length=7,
+        output_chunk_length=5,
+        output_chunk_shift=0,
+        hidden_size=16,
+        lstm_layers=1,
+        num_attention_heads=4,
+        full_attention=False,
+        feed_forward="GatedResidualNetwork",
+        dropout=0.1,
+        hidden_continuous_size=8,
+        categorical_embedding_sizes=None,
+        add_relative_index=False,
+        #skip_interpolation=False,
+        loss_fn=None,
+        norm_type="LayerNorm",
+        use_static_covariates=True,
+        is_likelihood=True,
+        add_encoders=None,
+        n_epochs=1,
+        batch_size = 8
+    ):
 
-        super().__init__(*args, **kwargs)
-        self.quantiles = kwargs.get("quantiles", [0.1, 0.5, 0.9])
+        super().__init__(
+            name=model_name, quantiles=quantiles, is_likelihood=is_likelihood
+        )
         if model is not None:
-            self.model = model
+            self.model = model 
         else:
-            self.input_chunk_length = kwargs.get("input_chunk_length", 7)
+            self.input_chunk_length = input_chunk_length
+            self.output_chunk_length = output_chunk_length
+            self.output_chunk_shift = output_chunk_shift
+            self.hidden_size = hidden_size 
+            self.lstm_layers = lstm_layers
+            self.num_attention_heads = num_attention_heads
+            self.full_attention = full_attention
+            self.feed_forward = feed_forward
+            self.dropout = dropout
+            self.hidden_continuous_size = hidden_continuous_size
+            self.categorical_embedding_sizes = categorical_embedding_sizes
+            self.add_relative_index = add_relative_index
+            self.loss_fn = loss_fn
+            self.norm_type = norm_type
+            self.use_static_covariates = use_static_covariates
+            self.n_epochs = n_epochs
+            self.add_encoders = add_encoders
+            self.batch_size = batch_size
             log_dir = project_root.joinpath(
-                f'logs/darts_tft/{datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}'
+                f"logs/dartstcn/{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}"
             )
             logger = TensorBoardLogger(save_dir=log_dir)
-            my_stopper = EarlyStopping(
-                monitor="val_loss",
-                patience=5,
-                mode="min",
-            )
             trainer_kwargs = dict(logger=[logger])
-            trainer_kwargs["callbacks"] = [my_stopper]
             self.model = TFTModel(
-                input_chunk_length=kwargs.get("input_chunk_length", 7),
-                output_chunk_length=kwargs.get("output_chunk_length", 5),
-                hidden_size=kwargs.get("hidden_size", 32),
-                dropout=kwargs.get("dropout", 0.1),
-                lstm_layers=kwargs.get("lstm_layers", 2),
-                batch_size=kwargs.get("batch_size", 32),
-                n_epochs=kwargs.get("n_epochs", 5),
-                random_state=kwargs.get("random_state", 42),
-                likelihood=QuantileRegression(self.quantiles),
+                input_chunk_length=self.input_chunk_length,
+                output_chunk_length=self.output_chunk_length,
+                output_chunk_shift=self.output_chunk_shift,
+                hidden_size=self.hidden_size,
+                lstm_layers=self.lstm_layers,
+                num_attention_heads=self.num_attention_heads,
+                full_attention=self.full_attention,
+                feed_forward=self.feed_forward,
+                dropout=self.dropout,
+                hidden_continuous_size=self.hidden_continuous_size,
+                categorical_embedding_sizes=self.categorical_embedding_sizes,
+                add_relative_index=self.add_relative_index,
+                loss_fn=self.loss_fn,
+                norm_type=self.norm_type,
+                batch_size=self.batch_size,
+                add_encoders=self.add_encoders,
+                use_static_covariates=self.use_static_covariates,
+                likelihood=QuantileRegression(self.quantiles) if self.is_likelihood else None,
                 pl_trainer_kwargs=trainer_kwargs,
+                n_epochs = self.n_epochs
             )
-        self.forecast_horizon = kwargs.get("forecast_horizon", 5)
-        self.scaler_target = Scaler()
-        self.scaler_cov = Scaler()
-
-    def convert_input(self, input: List[AdapterInput]) -> Tuple[
-        List[DartsTimeSeries],
-        List[DartsTimeSeries],
-        List[DartsTimeSeries],
-        Optional[pd.DataFrame],
-    ]:
-        """
-        Converts the input data into the required format for the model, applying scaling transformations
-        to the target and observed time series.
-
-        Parameters:
-            data (List[AdapterInput]): A list of AdapterInput objects containing the input data.
-
-        Returns:
-            Tuple[List[DartsTimeSeries], List[DartsTimeSeries], List[DartsTimeSeries], Optional[pd.DataFrame]]:
-                - target: A list of scaled DartsTimeSeries objects representing the target time series.
-                - known: A list of DartsTimeSeries objects representing the known covariates.
-                - observed: A list of scaled DartsTimeSeries objects representing the observed covariates.
-                - static: An optional pandas DataFrame containing static covariates, if available.
-        """
-
-        target, known, observed, static = super().convert_input(input)
-        target = self.scaler_target.fit_transform(target)
-        observed = self.scaler_cov.fit_transform(observed)
-        return target, known, observed, static
-
     def fit(
         self,
         train_data: List[AdapterInput],
         val_data: Optional[List[AdapterInput]],
     ):
+        """
+        Fits the model using the provided training and validation data.
+
+        Parameters:
+            train_data (List[AdapterInput]): The training data to be used for fitting the model.
+            val_data (Optional[List[AdapterInput]]): The validation data to be used for evaluating the model during training.
+                This parameter is optional and can be None.
+            **kwargs: Additional keyword arguments to be passed to the parent class's fit method.
+
+        Raises:
+            ModelAdapterError: If the model fitting process fails due to invalid parameters or other issues.
+
+        Logs:
+            An error message is logged if the model fitting process fails.
+        """
 
         try:
 
@@ -94,75 +126,22 @@ class DartsTFTModel(DartsModelAdapter):
         except ModelAdapterError as e:
             logging.error("Failed to fit a model, check the model params")
             raise ModelAdapterError(f"Failed to fit model: {e}")
-
     def predict(
         self,
-        data: Union[AdapterInput, List[AdapterInput]],
-        n: Optional[int] = 1,
-        historical_forecast=True,
-        predict_likelihood_parameters=True,
-        forecast_horizon=5,
-    ) -> List[TimeSeries]:
-        """
-        Predict using the model and provided data.
-        """
-
-        super().prepare_predict_args(data=data)
-        self._predict_args.update(
-            {"predict_likelihood_parameters": predict_likelihood_parameters}
-        )
-        if historical_forecast:
-            # If historical forecast is True, use the model's historical_forecast method
-            last_points_only = False
-            prediction = self.model.historical_forecasts(
-                **self._predict_args,
-                forecast_horizon=forecast_horizon,
-                last_points_only=last_points_only,
-                retrain=False,
-            )
-            prediction = self.scaler_target.inverse_transform(prediction)
-        else:
-            if n is not None:
-                self._predict_args["n"] = n
-            prediction = self.model.predict(**self._predict_args)
-            prediction = self.scaler_target.inverse_transform(prediction)
-        # self.isquantile = predict_likelihood_parameters
-        if isinstance(data, list):
-            # print(type(prediction[0][0]))
-
-            prediction_ts_format = [
-                DartsModelAdapter.to_time_series(ts=pred, quantiles=self.quantiles)
-                for pred in prediction
-            ]
-        else:
-            prediction_ts_format = DartsModelAdapter.to_time_series(
-                ts=prediction, quantiles=self.quantiles
-            )
-        return prediction_ts_format
-
-    def tune(
-        self,
-        train_data: List[AdapterInput],
-        val_data: Optional[List[AdapterInput]],
-        **kwargs,
+        data: List[AdapterInput],
+        n: Optional[int] = 24,
+        use_rolling_window: bool = True,
+        # **kwargs,
     ):
-        raise NotImplementedError("Tune method is not implemented yet.")
 
-    @classmethod
-    def load(cls, path: Union[Path, str]) -> "DartsTFTModel":
-        try:
-            model = TFTModel.load(path)
-            # if not isinstance(model, ForecastingModel):
-            #     raise InvalidModelTypeError(
-            #         "The loaded model is not a valid Darts model."
-            #     )
-            # else:
+        return super().predict(
+            data=data,
+            n=n,
+            use_rolling_window=use_rolling_window,
+            # **kwargs,
+        )
 
-            logging.info(f"Model loaded from {path}")
-            return cls(model=model)
-        except Exception as e:
-            logging.error(f"Failed to load the model from {path}, check the model path")
-            raise ModelAdapterError("Failed to load the model.") from e
+
 
     def __repr__(self):
         return "DartsTFTModel"
