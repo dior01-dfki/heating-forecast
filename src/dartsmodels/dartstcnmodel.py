@@ -25,7 +25,7 @@ class DartsTCNModel(DartsModelAdapter):
     def __init__(
         self,
         model: Optional[TCNModel] = None,
-        model_name: Optional[str] = None,
+        name: Optional[str] = None,
         quantiles=[0.1, 0.5, 0.9],
         input_chunk_length=7,
         output_chunk_length=5,
@@ -75,7 +75,7 @@ class DartsTCNModel(DartsModelAdapter):
             Scaler for the covariates.
         """
 
-        super().__init__(name=model_name, quantiles=quantiles,is_likelihood=is_likelihood)
+        super().__init__(name=name, quantiles=quantiles,is_likelihood=is_likelihood)
         self.quantiles = quantiles
         if model is not None:
             self.model = model

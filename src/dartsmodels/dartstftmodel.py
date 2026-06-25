@@ -23,7 +23,7 @@ class DartsTFTModel(DartsModelAdapter):
     def __init__(
         self,
         model: Optional[TFTModel] = None,
-        model_name: Optional[str] = None,
+        name: Optional[str] = None,
         quantiles=[0.1, 0.5, 0.9],
         input_chunk_length=7,
         output_chunk_length=5,
@@ -48,8 +48,9 @@ class DartsTFTModel(DartsModelAdapter):
     ):
 
         super().__init__(
-            name=model_name, quantiles=quantiles, is_likelihood=is_likelihood
+            name=name, quantiles=quantiles, is_likelihood=is_likelihood
         )
+        
         if model is not None:
             self.model = model 
         else:

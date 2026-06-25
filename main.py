@@ -85,13 +85,10 @@ def main():
     )
     data_source.append(ds_test)
 
-    #dp = DataProvider(data_sources=data_source, roles=[roles])
+
     dp = BaltDataProvider(data_sources=data_source, roles = [roles,roles], data_purposes=[1,2],splits=0.6)
     model_adapters = []
-    #train_set = dp.get_train_set()
-    #test_set = dp.get_test_set()
-    #val_set = dp.get_val_set()
-    #print(f"Test set: {test_set}")
+
     metrics = []
     metrics.append(
         DimwiseAggregatedMetric(axes=[TIME_STEP], reduction=column_wise_mae)
@@ -111,23 +108,12 @@ def main():
     metrics.append(
         DimwiseAggregatedMetric(axes=[OFFSET], reduction=column_wise_wmape)
     )
-    #print(dp.get_test_set())
-    # metrics.append(
-    #     DimwiseAggregatedQuantileLoss(axes=[OFFSET])
-    # )
-    #model_adapters.append(DartsTCNModel(n_epochs=1, scaler_data=dp.get_train_set(), predict_likelihood_parameters=True))
-    #model_adapters.append(dartsXGB())
-    # kwargs = {'predict_likelihood_parameters': True}
-    # lrmodel = DartsLRModel(
-    #     lags_past_covariates=24,
-    #     lags_future_covariates=list(range(24)),
-    #     output_chunk_length=24,
-    #     likelihood='quantile',
-    #     quantiles=[0.1, 0.5, 0.9],
-    #     model_name="LR_baseline_model",
-    #     kwargs=kwargs,
-    # )
-    # model_adapters.append(lrmodel)
+
+    metrics.append(
+        DimwiseAggregatedQuantileLoss(axes=[OFFSET])
+    )
+    
+
     def encode_year(idx):
         return (idx.year - 1950) / 50
 
@@ -140,20 +126,20 @@ def main():
         'tz': 'CET'
     }
     dartstcn = DartsTCNModel(
-        model_name="TCN_model",
+        name="TCN_model",
         input_chunk_length=48,
         quantiles=[0.1, 0.5, 0.9],
         output_chunk_length=24,
         kernel_size=3,
         num_filters=32,
-        predict_likelihood_parameters=True,
+        is_likelihood=True,
         n_epochs=5
     )
     model_adapters.append(dartstcn)
-    # #print(f"DartsTCN.is_likelihood: {dartstcn.is_likelihood}")
+
 
     dartstft = DartsTFTModel(
-        model_name="TFT_Model",
+        name="TFT_Model",
         input_chunk_length=48,
         quantiles=[0.1, 0.5, 0.9],
         output_chunk_length=24,
@@ -162,54 +148,7 @@ def main():
         add_encoders=add_encoders
     )
     model_adapters.append(dartstft)
-    # model_adapters.append(dartstcn)
-#     dartsXGB_model = dartsXGB(
-#         model_name="XGB_model",
-#         input_chunk_length=48,
-#         output_chunk_length=24,
-#         n_estimators=100,
-#         learning_rate=0.1,
-#         max_depth=6,
-#         lags=24,
-#         lags_past_covariates=24,
-#         random_state=42
-#     )
-#     dartsXGB_model_2 = dartsXGB(
-#         model_name="XGB_model_2",
-#         input_chunk_length=168,
-#         output_chunk_length=48,
-#         n_estimators=100,
-#         learning_rate=0.1,
-#         max_depth=6,
-#         lags=48,
-#         lags_past_covariates=48,
-#         random_state=55,
-#         # --- Add encoders here ---
-#         add_encoders={
-#             'cyclic': {'future': ['hour', 'dayofweek']},
-#             'datetime_attribute': {'future': ['month']},
-#             'transformer': Scaler() # Recommended to keep features in a similar range
-#         }
-# )
-#     model_adapters.append(dartsXGB_model)
-#     model_adapters.append(dartsXGB_model_2)
-    #rep = LocalResultReporter(  models=model_adapters, metrics=metrics)
-    # pipe = Pipeline(
-    #     dp=dp,
-    #     model_adapter=model_adapters,
-    #     reporter=rep,
-    # )
-    # pipe.run()
-    # train_set = dp.get_train_set()
-    # val_set = dp.get_val_set()
-    # test_set = dp.get_test_set()
-    #print(f"training a LR model")
-    # lrmodel.fit(train_set, val_set)
-    # print(f"predicting with LR model")
-    # #kwargs = {'predict_likelihood_parameters': True}
-    # kwargs = {}
-    # predictions = lrmodel.predict(data=test_set,n=12, **kwargs)
-    # print(len(predictions))
+
     clearml_rep = ClearMLReporter( models=model_adapters, metrics=metrics)
 
     
@@ -227,13 +166,7 @@ def main():
         branch="edz_train"
     )
     cml_pipe.run()
-    # out_path = "model_artifacts/DartsTCNModel"
-    # os.makedirs(out_path, exist_ok=True)
-    # dartstcn.save(out_path)
-    # Task.current_task().upload_artifact(
-    # name="DartsTCNModel",
-    # artifact_object=str(out_path),
-    #)
+
 if __name__ == "__main__":
     print("Starting main")
     main()
