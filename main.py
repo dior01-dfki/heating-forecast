@@ -158,7 +158,7 @@ def main():
         model_adapter=model_adapters,
         result_reporter=clearml_rep,
         project_name='ForeSightNEXT/BaltBest',
-        task_name=f'{model_adapters[0].model_name} training',
+        task_name=f'TCN TFT trainings',
         init_args=[],
         requirements="./requirements.txt",
         docker = "python:3.12-slim",
